@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/hybridoff-grid/static/css/main.e6c13ad2.css",
+    "main.js": "/hybridoff-grid/static/js/main.ae7cba57.js",
+    "static/js/453.183908db.chunk.js": "/hybridoff-grid/static/js/453.183908db.chunk.js",
+    "index.html": "/hybridoff-grid/index.html",
+    "main.e6c13ad2.css.map": "/hybridoff-grid/static/css/main.e6c13ad2.css.map",
+    "main.ae7cba57.js.map": "/hybridoff-grid/static/js/main.ae7cba57.js.map",
+    "453.183908db.chunk.js.map": "/hybridoff-grid/static/js/453.183908db.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.ae7cba57.js"
+  ]
+}
