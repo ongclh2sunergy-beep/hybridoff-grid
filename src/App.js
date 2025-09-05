@@ -25,6 +25,10 @@ function App() {
   const [power, setPower] = useState("");
   const [hours, setHours] = useState("");
 
+  // step 3: hybrid
+  const [dieselSaving, setDieselSaving] = useState(0); // % saving from genset
+
+
   // Step 1: Select mode
   if (!mode) {
     return (
@@ -397,39 +401,66 @@ function App() {
   return (
     <div style={styles.container}>
       <motion.div
-            key="step3"
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.4 }}
-          >
-      <h2>System Summary</h2>
-      <p>
-        You selected: <b>{mode}</b>
-      </p>
-      <p>
-        {mode === "Hybrid"
-          ? `Genset size: ${value} kWm`
-          : `Electricity usage: ${value} kWh`}
-      </p>
-      <button
-        style={styles.backButton}
-        onClick={() => {
-          setMode("");
-          setValue("");
-          setRangeMin("");
-          setRangeMax("");
-          setAverage("");
-          setPhase("");
-          setConfirmed(false);
-          setShowHelper(false);
-          setAppliance("");
-          setPower("");
-          setHours("");
-        }}
+        key="step3"
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -50 }}
+        transition={{ duration: 0.4 }}
       >
-        ← Start Over
-      </button>
+        <h2>System Summary</h2>
+        <p>
+          You selected: <b>{mode}</b>
+        </p>
+
+        {mode === "Hybrid" ? (
+          <>
+            <p>
+              Genset size: {value} kWm <br />
+              Range: {rangeMin} – {rangeMax} kW <br />
+              Average: {average} kW <br />
+              Phase: {phase}
+            </p>
+
+            <div style={{ marginTop: "20px", textAlign: "left" }}>
+              <h4>⚡ Diesel Saving</h4>
+              <p>Drag to set how much genset diesel you want to save:</p>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={dieselSaving}
+                onChange={(e) => setDieselSaving(e.target.value)}
+                style={{ width: "100%" }}
+              />
+              <p>
+                <b>{dieselSaving}% Diesel Saving</b>
+              </p>
+            </div>
+          </>
+        ) : (
+          <p>Electricity usage: {value} kWh</p>
+        )}
+
+        <button
+          style={styles.backButton}
+          onClick={() => {
+            setMode("");
+            setValue("");
+            setRangeMin("");
+            setRangeMax("");
+            setAverage("");
+            setPhase("");
+            setConfirmed(false);
+            setShowHelper(false);
+            setAppliance("");
+            setPower("");
+            setHours("");
+            setDieselSaving(0); // reset slider when restarting
+          }}
+        >
+          ← Start Over
+        </button>
       </motion.div>
     </div>
   );
