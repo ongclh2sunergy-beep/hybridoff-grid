@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { FaSolarPanel, FaBatteryFull, FaBolt, FaTimesCircle } from "react-icons/fa";
+import { FaSolarPanel, FaBatteryFull, FaTimesCircle } from "react-icons/fa";
 import { GiPowerGenerator } from "react-icons/gi";
+import { motion } from "framer-motion";
 
 function App() {
   const [mode, setMode] = useState("");        // "Hybrid" or "Off-Grid"
@@ -28,6 +29,13 @@ function App() {
   if (!mode) {
     return (
       <div style={{ textAlign: "center", marginTop: "50px" }}>
+        <motion.div
+            key="step1"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.4 }}
+          >
         <h2>Select your system type</h2>
 
         <div style={{ display: "flex", justifyContent: "center", gap: "40px", marginTop: "20px" }}>
@@ -87,6 +95,7 @@ function App() {
             </div>
           </button>
         </div>
+        </motion.div>
       </div>
     );
   }
@@ -95,6 +104,13 @@ function App() {
   if (!confirmed) {
     return (
       <div style={styles.container}>
+        <motion.div
+            key="step2"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.4 }}
+          >
         <h2>{mode} System Setup</h2>
 
         {mode === "Hybrid" ? (
@@ -371,13 +387,22 @@ function App() {
             ← Back
           </button>
         </div>
+        </motion.div>
       </div>
+      
     );
   }
 
   // Step 3: Show result summary
   return (
     <div style={styles.container}>
+      <motion.div
+            key="step3"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.4 }}
+          >
       <h2>System Summary</h2>
       <p>
         You selected: <b>{mode}</b>
@@ -405,6 +430,7 @@ function App() {
       >
         ← Start Over
       </button>
+      </motion.div>
     </div>
   );
 }
