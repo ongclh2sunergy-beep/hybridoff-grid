@@ -169,32 +169,6 @@ function App() {
               placeholder="Enter electricity (kWh)"
             />
 
-            {/* Guideline section */}
-            <div style={styles.card}>
-              <h4>Guideline (Typical Power Ratings)</h4>
-              <p>Use this as a reference if you’re not sure about your appliances:</p>
-              
-              <h5>❄ Air Conditioner</h5>
-              <ul>
-                <li>1.0 HP (~750 W)</li>
-                <li>1.5 HP (~1100 W)</li>
-                <li>2.0 HP (~1500 W)</li>
-                <li>2.5 HP (~1800 W)</li>
-              </ul>
-
-              <h5>🧊 Refrigerator</h5>
-              <ul>
-                <li>Small (150 – 200 L): ~100 W</li>
-                <li>Medium (250 – 350 L): ~150 W</li>
-                <li>Large (400+ L): ~200 – 250 W</li>
-              </ul>
-              
-              <p style={{ fontSize: 12, color: "#555" }}>
-                ⚡ Actual consumption varies by model and efficiency.  
-                You can use these numbers in the calculator below.
-              </p>
-            </div>
-
             {/* Appliance calculator */}
             <button
               style={styles.helpButton}
@@ -207,6 +181,26 @@ function App() {
               <div style={styles.card}>
                 <h4>Appliance Calculator</h4>
 
+                {/* Guideline Card */}
+                <div style={styles.guideline}>
+                  <h4>Guideline (Typical Power Ratings)</h4>
+                  <p>Use this as a reference if you’re not sure about your appliances:</p>
+
+                  <h5>❄ Air Conditioner</h5>
+                  <ul>
+                    <li>1.0 HP ≈ 750 W</li>
+                    <li>1.5 HP ≈ 1100 W</li>
+                    <li>2.0 HP ≈ 1500 W</li>
+                    <li>2.5 HP ≈ 1800 W</li>
+                  </ul>
+                  <h5>🧊 Refrigerator</h5>
+                  <ul>
+                    <li>Small (150–200 L): ~100 W</li>
+                    <li>Medium (250–350 L): ~150 W</li>
+                    <li>Large (400+ L): ~200–250 W</li>
+                  </ul>
+                </div>
+
                 {/* Appliance Dropdown */}
                 <select
                   style={styles.input}
@@ -215,15 +209,15 @@ function App() {
                 >
                   <option value="">-- Select Appliance --</option>
                   {/* Air Conditioner */}
-                  <option value="Air Conditioner 1.0HP">❄ Air Conditioner 1.0 HP (~750W)</option>
-                  <option value="Air Conditioner 1.5HP">❄ Air Conditioner 1.5 HP (~1100W)</option>
-                  <option value="Air Conditioner 2.0HP">❄ Air Conditioner 2.0 HP (~1500W)</option>
-                  <option value="Air Conditioner 2.5HP">❄ Air Conditioner 2.5 HP (~1800W)</option>
+                  <option value="Air Conditioner 1.0HP">Air Conditioner 1.0 HP</option>
+                  <option value="Air Conditioner 1.5HP">Air Conditioner 1.5 HP</option>
+                  <option value="Air Conditioner 2.0HP">Air Conditioner 2.0 HP</option>
+                  <option value="Air Conditioner 2.5HP">Air Conditioner 2.5 HP</option>
 
                   {/* Refrigerator */}
-                  <option value="Refrigerator Small">🧊 Refrigerator Small (150–200L ~100W)</option>
-                  <option value="Refrigerator Medium">🧊 Refrigerator Medium (250–350L ~150W)</option>
-                  <option value="Refrigerator Large">🧊 Refrigerator Large (400+L ~200–250W)</option>
+                  <option value="Refrigerator Small">Refrigerator Small</option>
+                  <option value="Refrigerator Medium">Refrigerator Medium</option>
+                  <option value="Refrigerator Large">Refrigerator Large</option>
 
                   {/* Others */}
                   <option value="Others">Others</option>
@@ -272,7 +266,7 @@ function App() {
                       else if (appliance.includes("2.5HP")) wattValue = 1800;
                       else if (appliance.includes("Small")) wattValue = 100;
                       else if (appliance.includes("Medium")) wattValue = 150;
-                      else if (appliance.includes("Large")) wattValue = 225; // avg of 200–250W
+                      else if (appliance.includes("Large")) wattValue = 225; // avg 200–250
                       else if (appliance === "Others") wattValue = Number(power);
 
                       const kwh = (units * wattValue * hours) / 1000;
@@ -465,12 +459,15 @@ const styles = {
     border: "1px solid #ccc",
     textAlign: "center",
   },
-  // grid: {
-  //   display: "grid",
-  //   gridTemplateColumns: "1fr 1fr",
-  //   gap: "10px",
-  //   marginBottom: "10px",
-  // },
+  guideline: {
+    background: "#f9f9f9",
+    border: "1px solid #ddd",
+    borderRadius: 8,
+    padding: "10px",
+    marginBottom: "15px",
+    fontSize: "14px",
+    textAlign: "left",
+  },
 };
 
 export default App;
