@@ -561,15 +561,38 @@ function App() {
                   {/* Card 4: System Requirement */}
                   <div style={styles.card}>
                     <h4>✅ System Requirement</h4>
+
                     {phase === "three" ? (
                       <ul style={{ textAlign: "left" }}>
-                        <li>Total Solar Panels = <b>{totalPanels}</b> (~{Math.ceil(totalPanels/3)} per phase)</li>
-                        <li>Total Batteries = <b>{totalBatteries}</b> (~{Math.ceil(totalBatteries/3)} per phase)</li>
+                        <li>
+                          Total Solar Panels ≈{" "}
+                          <b>
+                            {required_kWh} ÷ ((615 ÷ 1000) × 3.42) ≈ {totalPanels}
+                          </b>{" "}
+                          (~{Math.ceil(totalPanels / 3)} per phase)
+                        </li>
+                        <li>
+                          Total Batteries ≈{" "}
+                          <b>
+                            {required_kWh} ÷ 5 ≈ {totalBatteries}
+                          </b>{" "}
+                          (~{Math.ceil(totalBatteries / 3)} per phase)
+                        </li>
                       </ul>
                     ) : (
                       <ul style={{ textAlign: "left" }}>
-                        <li>Total Solar Panels = <b>{totalPanels}</b></li>
-                        <li>Total Batteries = <b>{totalBatteries}</b></li>
+                        <li>
+                          Total Solar Panels ≈{" "}
+                          <b>
+                            {required_kWh} ÷ ((615 ÷ 1000) × 3.42) ≈ {totalPanels}
+                          </b>
+                        </li>
+                        <li>
+                          Total Batteries ≈{" "}
+                          <b>
+                            {required_kWh} ÷ 5 ≈ {totalBatteries}
+                          </b>
+                        </li>
                       </ul>
                     )}
                   </div>
@@ -610,7 +633,7 @@ function App() {
                 <p>Required kWh = <b>{value}</b> kWh/day</p>
 
                 <p>
-                  Panels Needed ={" "}
+                  Panels Needed ≈{" "}
                   <b>
                     {value} ÷ ((615 ÷ 1000) × 3.42) ≈ {" "}
                     {Math.ceil(Number(value) / ((615 / 1000) * 3.42))}
@@ -618,7 +641,7 @@ function App() {
                 </p>
 
                 <p>
-                  Batteries Needed ={" "}
+                  Batteries Needed ≈{" "}
                   <b>
                     {value} ÷ 5 ≈ {Math.ceil(Number(value) / 5)}
                   </b>
