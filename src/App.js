@@ -13,6 +13,7 @@ function App() {
   const [rangeMax, setRangeMax] = useState("");
   const [average, setAverage] = useState("");
   const [phase, setPhase] = useState("");
+  const [operatingM, setOperatingM] = useState("");
 
   // step 2: off-grid
   const [applianceList, setApplianceList] = useState([]);
@@ -25,9 +26,23 @@ function App() {
   const [power, setPower] = useState("");
   const [hours, setHours] = useState("");
 
-  // step 3: hybrid
-  const [dieselSaving, setDieselSaving] = useState(0); // % saving from genset
+  // Custom Appliance
+  const [customText, setCustomText] = useState(
+    "1. Air Conditioner – 1.5 HP – 1 unit – 8 hours/day\n2. Refrigerator – Medium – 1 unit – 24 hours/day\n\nPlease calculate the kWh/day for these appliances"
+  );
+  const [copyMessage, setCopyMessage] = useState("");
 
+  // step 3: hybrid
+  const [dieselSaving, setDieselSaving] = useState(50); // % saving from genset
+  const [peakSunHours, setPeakSunHours] = useState(3.42);
+  const [panelWatt, setPanelWatt] = useState(615);
+  const [derate, setDerate] = useState(0.8);
+  const [batteryUsableKWh, setBatteryUsableKWh] = useState(2.56);
+  const [daysAutonomy, setDaysAutonomy] = useState(1);
+
+
+  // step 3: off-grid
+  const [copyMsg, setCopyMsg] = useState("");
 
   // Step 1: Select mode
   if (!mode) {
@@ -119,42 +134,10 @@ function App() {
 
         {mode === "Hybrid" ? (
           <>
-            <p>Please enter your genset details:</p>
+            <p>Please select your genset phase first:</p>
 
-            <input
-              type="number"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              style={styles.input}
-              placeholder="Operating M"
-            />
-
-            <input
-              type="number"
-              value={rangeMin}
-              onChange={(e) => setRangeMin(e.target.value)}
-              style={styles.input}
-              placeholder="Range Min (kW)"
-            />
-
-            <input
-              type="number"
-              value={rangeMax}
-              onChange={(e) => setRangeMax(e.target.value)}
-              style={styles.input}
-              placeholder="Range Max (kW)"
-            />
-
-            <input
-              type="number"
-              value={average}
-              onChange={(e) => setAverage(e.target.value)}
-              style={styles.input}
-              placeholder="Average (kW)"
-            />
-
-            <div style={{ marginTop: "10px", textAlign: "left" }}>
-              <p>Phase:</p>
+            {/* Phase Selection */}
+            <div style={{ marginTop: "10px", textAlign: "center" }}>
               <label>
                 <input
                   type="radio"
@@ -177,6 +160,61 @@ function App() {
                 Three Phase
               </label>
             </div>
+
+            {/* Show genset details only if phase is selected */}
+            {phase && (
+              <>
+                <p style={{ marginTop: "15px" }}>Please enter your genset details:</p>
+
+                {/* Operating M */}
+                <label style={{ display: "block", marginTop: "15px" }}>
+                  Operating M/day:
+                </label>
+                <input
+                  type="number"
+                  value={operatingM}
+                  onChange={(e) => setOperatingM(e.target.value)}
+                  style={styles.input}
+                  placeholder="Enter operating hours per day"
+                />
+
+                {/* Range Min */}
+                <label style={{ display: "block", marginTop: "15px" }}>
+                  Range Min (kW):
+                </label>
+                <input
+                  type="number"
+                  value={rangeMin}
+                  onChange={(e) => setRangeMin(e.target.value)}
+                  style={styles.input}
+                  placeholder="Enter minimum kW"
+                />
+
+                {/* Range Max */}
+                <label style={{ display: "block", marginTop: "15px" }}>
+                  Range Max (kW):
+                </label>
+                <input
+                  type="number"
+                  value={rangeMax}
+                  onChange={(e) => setRangeMax(e.target.value)}
+                  style={styles.input}
+                  placeholder="Enter maximum kW"
+                />
+
+                {/* Average */}
+                <label style={{ display: "block", marginTop: "15px" }}>
+                  Average (kW):
+                </label>
+                <input
+                  type="number"
+                  value={average}
+                  onChange={(e) => setAverage(e.target.value)}
+                  style={styles.input}
+                  placeholder="Enter average kW"
+                />
+              </>
+            )}
           </>
         ) : (
           <>
@@ -333,6 +371,44 @@ function App() {
               </div>
             )}
 
+            <div style={styles.card}>
+              <h4>📝 Custom Appliance List</h4>
+              <p>
+                You can type or paste your appliances here.
+              </p>
+
+              <textarea
+                style={{
+                  width: "90%",
+                  height: "120px",
+                  padding: "10px",
+                  fontSize: "14px",
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  resize: "vertical",
+                }}
+                value={customText}
+                onChange={(e) => setCustomText(e.target.value)}
+              />
+
+              <button
+                style={styles.helpButton}
+                onClick={() => {
+                  navigator.clipboard.writeText(customText);
+                  setCopyMessage("✅ Custom list copied! Paste it into ChatGPT to calculate.");
+                  setTimeout(() => setCopyMessage(""), 3000); // Auto hide after 3s
+                }}
+              >
+                📋 Copy Text
+              </button>
+
+              {copyMessage && (
+                <p style={{ color: "green", fontSize: "14px", marginTop: "8px" }}>
+                  {copyMessage}
+                </p>
+              )}
+            </div>
+
             {/* Ask about genset backup */}
             <div style={styles.card}>
               <h4>Backup Genset</h4>
@@ -361,39 +437,46 @@ function App() {
           </>
         )}
 
-        <div>
-          <button
-            style={styles.modeButton}
-            onClick={() => setConfirmed(true)}
-            disabled={
-              mode === "Hybrid"
-                ? !value || !rangeMin || !rangeMax || !average || !phase
-                : !value
-            }
-          >
-            Confirm
-          </button>
-          <button
-            style={styles.backButton}
-            onClick={() => {
-              setMode("");
-              setValue("");
-              setRangeMin("");
-              setRangeMax("");
-              setAverage("");
-              setPhase("");
-              setShowHelper(false);
-              setAppliance("");
-              setPower("");
-              setHours("");
-            }}
-          >
-            ← Back
-          </button>
-        </div>
+          <div>
+            <button
+              style={styles.modeButton}
+              onClick={() => setConfirmed(true)}
+              disabled={
+                mode === "Hybrid"
+                  ? !phase || !operatingM || !rangeMin || !rangeMax || !average
+                  : !value
+              }
+            >
+              Confirm
+            </button>
+            <button
+              style={styles.backButton}
+              onClick={() => {
+                // reset everything
+                setMode("");
+                setPhase("");
+                setOperatingM("");
+                setRangeMin("");
+                setRangeMax("");
+                setAverage("");
+                setValue("");
+                setShowHelper(false);
+                setAppliance("");
+                setUnits("");
+                setPower("");
+                setHours("");
+                setApplianceList([]);
+                setHasGenset("");
+                setCustomText(
+                  "1. Air Conditioner – 1.5 HP – 1 unit – 8 hours/day\n2. Refrigerator – Medium – 1 unit – 24 hours/day\n\nPlease calculate the kWh/day for these appliances"
+                );
+              }}
+            >
+              ← Back
+            </button>
+          </div>
         </motion.div>
       </div>
-      
     );
   }
 
@@ -407,39 +490,143 @@ function App() {
         exit={{ opacity: 0, x: -50 }}
         transition={{ duration: 0.4 }}
       >
-        <h2>System Summary</h2>
+        <h2>🌞 System Summary</h2>
         <p>
           You selected: <b>{mode}</b>
         </p>
 
         {mode === "Hybrid" ? (
           <>
-            <p>
-              Genset size: {value} kWm <br />
-              Range: {rangeMin} – {rangeMax} kW <br />
-              Average: {average} kW <br />
-              Phase: {phase}
-            </p>
+            <p>⏱ Operating Hours (M): <b>{operatingM} hours/day</b></p>
 
-            <div style={{ marginTop: "20px", textAlign: "left" }}>
-              <h4>⚡ Diesel Saving</h4>
-              <p>Drag to set how much genset diesel you want to save:</p>
+            {/* Diesel saving slider */}
+            <label style={{ display: "block", margin: "20px 0" }}>
+              Diesel Saving: <b>{dieselSaving}%</b>
               <input
                 type="range"
                 min="0"
                 max="100"
-                step="5"
                 value={dieselSaving}
-                onChange={(e) => setDieselSaving(e.target.value)}
+                onChange={(e) => setDieselSaving(Number(e.target.value))}
                 style={{ width: "100%" }}
               />
-              <p>
-                <b>{dieselSaving}% Diesel Saving</b>
-              </p>
-            </div>
+            </label>
+
+            {/* Calculation */}
+            {(() => {
+              const peakSunHour = 3.42;
+              const panelWatt = 615; // W per panel
+              const battery_kWh = 5; // Assume each battery ~5 kWh usable
+              const genset_kWh = Number(average) * Number(operatingM);
+
+              const required_kWh = genset_kWh * (dieselSaving / 100);
+              const perPanel_kWh = (panelWatt / 1000) * peakSunHour;
+              const totalPanels = Math.ceil(required_kWh / perPanel_kWh);
+              const totalBatteries = Math.ceil(required_kWh / battery_kWh);
+
+              return (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(2, minmax(300px, 400px))", // min 300px, max 400px
+                    justifyContent: "center",
+                    gap: "20px",
+                    marginTop: "20px",
+                  }}
+                >
+                  {/* Card 1: Input Parameters */}
+                  <div style={styles.card}>
+                    <h4>📊 Input Parameters</h4>
+                    <ul style={{ textAlign: "left" }}>
+                      <li>Average Load = <b>{average} kW</b></li>
+                      <li>Operating Hours = <b>{operatingM} h/day</b></li>
+                      <li>Diesel Saving Target = <b>{dieselSaving}%</b></li>
+                    </ul>
+                  </div>
+
+                  {/* Card 2: Calculations */}
+                  <div style={styles.card}>
+                    <h4>🧮 Calculations</h4>
+                    <ul style={{ textAlign: "left" }}>
+                      <li>Daily Genset Energy = {average} × {operatingM} = <b>{genset_kWh.toFixed(1)} kWh/day</b></li>
+                      <li>Required Solar Energy = {genset_kWh.toFixed(1)} × {dieselSaving/100} = <b>{required_kWh.toFixed(1)} kWh/day</b></li>
+                      <li>Solar Output per Panel = ({panelWatt/1000} × {peakSunHour}) = <b>{perPanel_kWh.toFixed(2)} kWh/day</b></li>
+                    </ul>
+                  </div>
+
+                  {/* Card 3: System Constants */}
+                  <div style={styles.card}>
+                    <h4>🔧 System Constants</h4>
+                    <ul style={{ textAlign: "left" }}>
+                      <li>Peak Sun Hours = <b>{peakSunHour}</b> h/day</li>
+                      <li>Solar Panel Size = <b>{panelWatt} W</b></li>
+                      <li>Battery Capacity = <b>{battery_kWh} kWh</b></li>
+                    </ul>
+                  </div>
+
+                  {/* Card 4: System Requirement */}
+                  <div style={styles.card}>
+                    <h4>✅ System Requirement</h4>
+                    {phase === "three" ? (
+                      <ul style={{ textAlign: "left" }}>
+                        <li>Total Solar Panels = <b>{totalPanels}</b> (~{Math.ceil(totalPanels/3)} per phase)</li>
+                        <li>Total Batteries = <b>{totalBatteries}</b> (~{Math.ceil(totalBatteries/3)} per phase)</li>
+                      </ul>
+                    ) : (
+                      <ul style={{ textAlign: "left" }}>
+                        <li>Total Solar Panels = <b>{totalPanels}</b></li>
+                        <li>Total Batteries = <b>{totalBatteries}</b></li>
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </>
         ) : (
-          <p>Electricity usage: {value} kWh</p>
+          <>
+            <p>⚡ Electricity usage: <b>{value} kWh/day</b></p>
+
+            {/* Off-grid calculation */}
+            {(() => {
+              const peakSunHour = 3.42;
+              const panelWatt = 615;
+              const battery_kWh = 5;
+
+              const perPanel_kWh = (panelWatt / 1000) * peakSunHour;
+              const totalPanels = Math.ceil(Number(value) / perPanel_kWh);
+              const totalBatteries = Math.ceil(Number(value) / battery_kWh);
+
+              return (
+                <>
+                  <div style={styles.card}>
+                    <h4>🔧 System Constants</h4>
+                    <ul style={{ textAlign: "left" }}>
+                      <li>Peak Sun Hours = <b>{peakSunHour}</b> h/day</li>
+                      <li>Solar Panel Size = <b>{panelWatt} W</b></li>
+                      <li>Battery Capacity = <b>{battery_kWh} kWh</b></li>
+                    </ul>
+                  </div>
+
+                  <div style={styles.card}>
+                    <h4>🧮 Calculations</h4>
+                    <ul style={{ textAlign: "left" }}>
+                      <li>Required Energy = <b>{value} kWh/day</b></li>
+                      <li>Solar Output per Panel = ({panelWatt/1000} kW × {peakSunHour} h) = <b>{perPanel_kWh.toFixed(2)} kWh/day</b></li>
+                    </ul>
+                  </div>
+
+                  <div style={styles.card}>
+                    <h4>✅ System Requirement</h4>
+                    <ul style={{ textAlign: "left" }}>
+                      <li>Total Solar Panels = <b>{totalPanels}</b></li>
+                      <li>Total Batteries = <b>{totalBatteries}</b></li>
+                    </ul>
+                  </div>
+                </>
+              );
+            })()}
+          </>
         )}
 
         <button
@@ -447,6 +634,7 @@ function App() {
           onClick={() => {
             setMode("");
             setValue("");
+            setOperatingM("");
             setRangeMin("");
             setRangeMax("");
             setAverage("");
@@ -456,7 +644,7 @@ function App() {
             setAppliance("");
             setPower("");
             setHours("");
-            setDieselSaving(0); // reset slider when restarting
+            setDieselSaving(50);
           }}
         >
           ← Start Over
