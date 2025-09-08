@@ -34,15 +34,9 @@ function App() {
 
   // step 3: hybrid
   const [dieselSaving, setDieselSaving] = useState(50); // % saving from genset
-  const [peakSunHours, setPeakSunHours] = useState(3.42);
-  const [panelWatt, setPanelWatt] = useState(615);
-  const [derate, setDerate] = useState(0.8);
-  const [batteryUsableKWh, setBatteryUsableKWh] = useState(2.56);
-  const [daysAutonomy, setDaysAutonomy] = useState(1);
-
 
   // step 3: off-grid
-  const [copyMsg, setCopyMsg] = useState("");
+  const [hasGensetBackup, setHasGensetBackup] = useState(false);
 
   // Step 1: Select mode
   if (!mode) {
@@ -585,47 +579,69 @@ function App() {
           </>
         ) : (
           <>
-            <p>⚡ Electricity usage: <b>{value} kWh/day</b></p>
+            {/* Off-Grid */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(300px, 400px))",
+                justifyContent: "center",
+                gap: "20px",
+                marginTop: "20px",
+              }}
+            >
+              {/* Row 1 */}
+              <div style={styles.card}>
+                <h4>📥 Input Parameters</h4>
+                <p>Electricity Usage: <b>{value} kWh/day</b></p>
+                <p>Backup Genset: <b>{hasGenset === "yes" ? "Yes" : "No"}</b></p>
+              </div>
 
-            {/* Off-grid calculation */}
-            {(() => {
-              const peakSunHour = 3.42;
-              const panelWatt = 615;
-              const battery_kWh = 5;
+              <div style={styles.card}>
+                <h4>⚙️ System Constants</h4>
+                <p>Peak Sun Hour = <b>3.42 h/day</b></p>
+                <p>Solar Panel Wattage = <b>615 W</b></p>
+                <p>Battery Capacity = <b>5 kWh</b></p>
+                <p>Autonomy = <b>{hasGenset === "yes" ? "1 Day" : "3 Days"}</b></p>
+              </div>
 
-              const perPanel_kWh = (panelWatt / 1000) * peakSunHour;
-              const totalPanels = Math.ceil(Number(value) / perPanel_kWh);
-              const totalBatteries = Math.ceil(Number(value) / battery_kWh);
+              {/* Row 2 */}
+              <div style={styles.card}>
+                <h4>🧮 Calculation</h4>
+                <p>Required kWh = <b>{value}</b> kWh/day</p>
 
-              return (
-                <>
-                  <div style={styles.card}>
-                    <h4>🔧 System Constants</h4>
-                    <ul style={{ textAlign: "left" }}>
-                      <li>Peak Sun Hours = <b>{peakSunHour}</b> h/day</li>
-                      <li>Solar Panel Size = <b>{panelWatt} W</b></li>
-                      <li>Battery Capacity = <b>{battery_kWh} kWh</b></li>
-                    </ul>
-                  </div>
+                <p>
+                  Panels Needed ={" "}
+                  <b>
+                    {value} ÷ ((615 ÷ 1000) × 3.42) ≈ {" "}
+                    {Math.ceil(Number(value) / ((615 / 1000) * 3.42))}
+                  </b>
+                </p>
 
-                  <div style={styles.card}>
-                    <h4>🧮 Calculations</h4>
-                    <ul style={{ textAlign: "left" }}>
-                      <li>Required Energy = <b>{value} kWh/day</b></li>
-                      <li>Solar Output per Panel = ({panelWatt/1000} kW × {peakSunHour} h) = <b>{perPanel_kWh.toFixed(2)} kWh/day</b></li>
-                    </ul>
-                  </div>
+                <p>
+                  Batteries Needed ={" "}
+                  <b>
+                    {value} ÷ 5 ≈ {Math.ceil(Number(value) / 5)}
+                  </b>
+                </p>
+              </div>
 
-                  <div style={styles.card}>
-                    <h4>✅ System Requirement</h4>
-                    <ul style={{ textAlign: "left" }}>
-                      <li>Total Solar Panels = <b>{totalPanels}</b></li>
-                      <li>Total Batteries = <b>{totalBatteries}</b></li>
-                    </ul>
-                  </div>
-                </>
-              );
-            })()}
+              <div style={styles.card}>
+                <h4>✅ System Requirement</h4>
+                <p>
+                  Total Solar Panels:{" "}
+                  <b>{Math.ceil(Number(value) / ((615 / 1000) * 3.42))}</b>
+                </p>
+                <p>
+                  Total Batteries: <b>{Math.ceil(Number(value) / 5)}</b>
+                </p>
+                <p style={{ marginTop: "10px", fontStyle: "italic", color: "#555" }}>
+                  ⚠️ Batteries provide autonomy for{" "}
+                  {hasGenset === "yes"
+                    ? "1 day (with genset backup)"
+                    : "3 days (no backup genset)"}.
+                </p>
+              </div>
+            </div>
           </>
         )}
 
