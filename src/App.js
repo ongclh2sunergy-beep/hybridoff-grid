@@ -17,8 +17,9 @@ function App() {
 
   // step 2: off-grid
   const [applianceList, setApplianceList] = useState([]);
-  const [hasGenset, setHasGenset] = useState(""); // for backup genset
+  const [hasGenset, setHasGenset] = useState(null); // for backup genset
   const [units, setUnits] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");  
 
   // Appliance helper states
   const [showHelper, setShowHelper] = useState(false);
@@ -36,7 +37,6 @@ function App() {
   const [dieselSaving, setDieselSaving] = useState(50); // % saving from genset
 
   // step 3: off-grid
-  const [hasGensetBackup, setHasGensetBackup] = useState(false);
 
   // Step 1: Select mode
   if (!mode) {
@@ -51,13 +51,22 @@ function App() {
           >
         <h2>Select your system type</h2>
 
-        <div style={{ display: "flex", justifyContent: "center", gap: "40px", marginTop: "20px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column", // 👈 stack vertically instead of side by side
+            alignItems: "center",
+            gap: "20px", // spacing between buttons
+            marginTop: "20px",
+          }}
+        >
           
           {/* Hybrid Button */}
           <button
             onClick={() => setMode("Hybrid")}
             style={{
-              width: 200,
+              width: 220,
+              height: 150,
               padding: "15px",
               fontSize: "16px",
               cursor: "pointer",
@@ -83,7 +92,8 @@ function App() {
           <button
             onClick={() => setMode("Off-Grid")}
             style={{
-              width: 200,
+              width: 220,
+              height: 150,
               padding: "15px",
               fontSize: "16px",
               cursor: "pointer",
@@ -367,9 +377,7 @@ function App() {
 
             <div style={styles.card}>
               <h4>📝 Custom Appliance List</h4>
-              <p>
-                You can type or paste your appliances here.
-              </p>
+              <p>You can type or paste your appliances here.</p>
 
               <textarea
                 style={{
@@ -385,6 +393,7 @@ function App() {
                 onChange={(e) => setCustomText(e.target.value)}
               />
 
+              {/* Copy Button */}
               <button
                 style={styles.helpButton}
                 onClick={() => {
@@ -394,6 +403,17 @@ function App() {
                 }}
               >
                 📋 Copy Text
+              </button>
+
+              {/* NEW Ask ChatGPT Button */}
+              <button
+                style={{ ...styles.helpButton, marginLeft: "10px", backgroundColor: "#10a37f" }}
+                onClick={() => {
+                  const chatGPTUrl = `https://chat.openai.com/?q=${encodeURIComponent(customText)}`;
+                  window.open(chatGPTUrl, "_blank");
+                }}
+              >
+                🤖 Ask ChatGPT
               </button>
 
               {copyMessage && (
@@ -434,15 +454,52 @@ function App() {
           <div>
             <button
               style={styles.modeButton}
-              onClick={() => setConfirmed(true)}
-              disabled={
-                mode === "Hybrid"
-                  ? !phase || !operatingM || !rangeMin || !rangeMax || !average
-                  : !value
-              }
+              onClick={() => {
+                if (mode === "Hybrid") {
+                  if (!phase) {
+                    setErrorMessage("⚠️ Please select a genset phase.");
+                    return;
+                  }
+                  if (!operatingM) {
+                    setErrorMessage("⚠️ Please enter operating hours per day.");
+                    return;
+                  }
+                  if (!rangeMin) {
+                    setErrorMessage("⚠️ Please enter the minimum kW.");
+                    return;
+                  }
+                  if (!rangeMax) {
+                    setErrorMessage("⚠️ Please enter the maximum kW.");
+                    return;
+                  }
+                  if (!average) {
+                    setErrorMessage("⚠️ Please enter the average kW.");
+                    return;
+                  }
+                } else {
+                  if (!value) {
+                    setErrorMessage("⚠️ Please enter your electricity usage (kWh).");
+                    return;
+                  }
+                  if (hasGenset === null) {
+                    setErrorMessage("⚠️ Please select whether you have a backup genset.");
+                    return;
+                  }
+                }
+
+                // If everything is filled, clear error and confirm
+                setErrorMessage("");
+                setConfirmed(true);
+              }}
             >
               Confirm
             </button>
+
+            {/* Show error message */}
+            {errorMessage && (
+              <p style={{ color: "red", marginTop: "10px" }}>{errorMessage}</p>
+            )}
+
             <button
               style={styles.backButton}
               onClick={() => {
@@ -460,7 +517,7 @@ function App() {
                 setPower("");
                 setHours("");
                 setApplianceList([]);
-                setHasGenset("");
+                setHasGenset(null);
                 setCustomText(
                   "1. Air Conditioner – 1.5 HP – 1 unit – 8 hours/day\n2. Refrigerator – Medium – 1 unit – 24 hours/day\n\nPlease calculate the kWh/day for these appliances"
                 );
