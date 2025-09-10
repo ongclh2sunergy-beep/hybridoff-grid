@@ -14,6 +14,7 @@ function App() {
   const [average, setAverage] = useState("");
   const [phase, setPhase] = useState("");
   const [operatingM, setOperatingM] = useState("");
+  const [kva, setKva] = useState("");
 
   // step 2: off-grid
   const [applianceList, setApplianceList] = useState([]);
@@ -80,11 +81,10 @@ function App() {
             }}
           >
             <strong>Hybrid</strong>
-            <div style={{ display: "flex", gap: "8px", fontSize: "22px" }}>
-              <FaSolarPanel /> <FaBatteryFull /> <GiPowerGenerator />
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "14px", color: "green" }}>
-              ✔ Solar + Battery + Genset
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <FaSolarPanel size={40} />
+              <FaBatteryFull size={40} />
+              <GiPowerGenerator size={40} />
             </div>
           </button>
 
@@ -107,14 +107,13 @@ function App() {
             }}
           >
             <strong>Off-Grid</strong>
-            <div style={{ display: "flex", gap: "8px", fontSize: "22px" }}>
-              <FaSolarPanel /> <FaBatteryFull />
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <FaSolarPanel size={40} />
+              <FaBatteryFull size={40} />
+              <GiPowerGenerator size={40} />
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "14px", color: "red" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "16px", color: "red" }}>
               <FaTimesCircle /> No TNB
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "14px", color: "green" }}>
-              ✔ Solar + Battery
             </div>
           </button>
         </div>
@@ -134,6 +133,47 @@ function App() {
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.4 }}
           >
+            <div style={{ position: "relative", minHeight: "50px" }}>
+            {/* Back button at top-left */}
+            <button
+              style={{
+                position: "absolute",
+                // top: "1px",
+                left: "10px",
+                padding: "10px 20px",
+                borderRadius: "8px",
+                border: "1px solid #ccc",
+                cursor: "pointer",
+                background: "#f5f5f5",
+              }}
+              onClick={() => {
+                // reset everything
+                setMode("");
+                setPhase("");
+                setOperatingM("");
+                setRangeMin("");
+                setRangeMax("");
+                setAverage("");
+                setKva("");
+                setValue("");
+                setShowHelper(false);
+                setAppliance("");
+                setUnits("");
+                setPower("");
+                setHours("");
+                setApplianceList([]);
+                setHasGenset(null);
+                setErrorMessage("")
+                setCustomText(
+                  "1. Air Conditioner – 1.5 HP – 1 unit – 8 hours/day\n2. Refrigerator – Medium – 1 unit – 24 hours/day\n\nPlease calculate the kWh/day for these appliances"
+                );
+              }}
+            >
+              ← Back
+            </button>
+          </div>
+
+
         <h2>{mode} System Setup</h2>
 
         {mode === "Hybrid" ? (
@@ -172,57 +212,69 @@ function App() {
 
                 {/* Operating M */}
                 <label style={{ display: "block", marginTop: "15px" }}>
-                  Operating M/day:
+                  Operating M:
                 </label>
                 <input
                   type="number"
                   value={operatingM}
                   onChange={(e) => setOperatingM(e.target.value)}
                   style={styles.input}
-                  placeholder="Enter operating hours per day"
+                  placeholder="Enter operating M"
                 />
 
                 {/* Range Min */}
                 <label style={{ display: "block", marginTop: "15px" }}>
-                  Range Min (kW):
+                  Range Min (M):
                 </label>
                 <input
                   type="number"
                   value={rangeMin}
                   onChange={(e) => setRangeMin(e.target.value)}
                   style={styles.input}
-                  placeholder="Enter minimum kW"
+                  placeholder="Enter minimum M"
                 />
 
                 {/* Range Max */}
                 <label style={{ display: "block", marginTop: "15px" }}>
-                  Range Max (kW):
+                  Range Max (M):
                 </label>
                 <input
                   type="number"
                   value={rangeMax}
                   onChange={(e) => setRangeMax(e.target.value)}
                   style={styles.input}
-                  placeholder="Enter maximum kW"
+                  placeholder="Enter maximum M"
                 />
 
                 {/* Average */}
                 <label style={{ display: "block", marginTop: "15px" }}>
-                  Average (kW):
+                  Average (M):
                 </label>
                 <input
                   type="number"
                   value={average}
                   onChange={(e) => setAverage(e.target.value)}
                   style={styles.input}
-                  placeholder="Enter average kW"
+                  placeholder="Enter average M"
+                />
+
+                {/* kVA */}
+                <label style={{ display: "block", marginTop: "15px" }}>
+                  Genset Rating (kVA):
+                </label>
+                <input
+                  type="number"
+                  value={kva}
+                  onChange={(e) => setKva(e.target.value)}
+                  style={styles.input}
+                  placeholder="Enter genset kVA"
                 />
               </>
             )}
           </>
         ) : (
           <>
-            <p>Please enter your electricity usage (in kWh):</p>
+            <p>Please enter your electricity demand (in kWh):</p>
             <input
               type="number"
               value={value}
@@ -426,7 +478,7 @@ function App() {
             {/* Ask about genset backup */}
             <div style={styles.card}>
               <h4>Backup Genset</h4>
-              <p>Do you have a backup genset in your system?</p>
+              <p>Do you have a backup genset?</p>
               <label>
                 <input
                   type="radio"
@@ -451,7 +503,13 @@ function App() {
           </>
         )}
 
-          <div>
+          {/* Main content (Confirm + Error Message) */}
+          <div style={{ textAlign: "center", marginTop: "40px" }}>
+            {/* Show error message */}
+            {errorMessage && (
+              <p style={{ color: "red", marginTop: "10px" }}>{errorMessage}</p>
+            )}
+
             <button
               style={styles.modeButton}
               onClick={() => {
@@ -461,19 +519,23 @@ function App() {
                     return;
                   }
                   if (!operatingM) {
-                    setErrorMessage("⚠️ Please enter operating hours per day.");
+                    setErrorMessage("⚠️ Please enter operating M.");
                     return;
                   }
                   if (!rangeMin) {
-                    setErrorMessage("⚠️ Please enter the minimum kW.");
+                    setErrorMessage("⚠️ Please enter the minimum M.");
                     return;
                   }
                   if (!rangeMax) {
-                    setErrorMessage("⚠️ Please enter the maximum kW.");
+                    setErrorMessage("⚠️ Please enter the maximum M.");
                     return;
                   }
                   if (!average) {
-                    setErrorMessage("⚠️ Please enter the average kW.");
+                    setErrorMessage("⚠️ Please enter the average M.");
+                    return;
+                  }
+                  if (!kva) {
+                    setErrorMessage("⚠️ Please enter the genset rating (kVA).");
                     return;
                   }
                 } else {
@@ -490,40 +552,17 @@ function App() {
                 // If everything is filled, clear error and confirm
                 setErrorMessage("");
                 setConfirmed(true);
+
+                // ✅ Delay scroll by 1s (after Step 3 renders)
+                setTimeout(() => {
+                  window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                  });
+                }, 500);
               }}
             >
               Confirm
-            </button>
-
-            {/* Show error message */}
-            {errorMessage && (
-              <p style={{ color: "red", marginTop: "10px" }}>{errorMessage}</p>
-            )}
-
-            <button
-              style={styles.backButton}
-              onClick={() => {
-                // reset everything
-                setMode("");
-                setPhase("");
-                setOperatingM("");
-                setRangeMin("");
-                setRangeMax("");
-                setAverage("");
-                setValue("");
-                setShowHelper(false);
-                setAppliance("");
-                setUnits("");
-                setPower("");
-                setHours("");
-                setApplianceList([]);
-                setHasGenset(null);
-                setCustomText(
-                  "1. Air Conditioner – 1.5 HP – 1 unit – 8 hours/day\n2. Refrigerator – Medium – 1 unit – 24 hours/day\n\nPlease calculate the kWh/day for these appliances"
-                );
-              }}
-            >
-              ← Back
             </button>
           </div>
         </motion.div>
@@ -548,8 +587,6 @@ function App() {
 
         {mode === "Hybrid" ? (
           <>
-            <p>⏱ Operating Hours (M): <b>{operatingM} hours/day</b></p>
-
             {/* Diesel saving slider */}
             <label style={{ display: "block", margin: "20px 0" }}>
               Diesel Saving: <b>{dieselSaving}%</b>
@@ -565,22 +602,33 @@ function App() {
 
             {/* Calculation */}
             {(() => {
+              const pf = 0.9;
               const peakSunHour = 3.42;
               const panelWatt = 615; // W per panel
               const battery_kWh = 5; // Assume each battery ~5 kWh usable
-              const genset_kWh = Number(average) * Number(operatingM);
 
-              const required_kWh = genset_kWh * (dieselSaving / 100);
+              // Convert genset meter percentage to kW
+              const kvaNum = Number(kva);
+              const min_kW = (Number(rangeMin) / 100) * (kvaNum * pf);
+              const max_kW = (Number(rangeMax) / 100) * (kvaNum * pf);
+              const avg_kW = (Number(average) / 100) * (kvaNum * pf);
+
+              // Required solar energy based on avg load
+              const required_kWh = avg_kW * (dieselSaving / 100);
+
+              // Solar output per panel
               const perPanel_kWh = (panelWatt / 1000) * peakSunHour;
+
+              // System sizing
               const totalPanels = Math.ceil(required_kWh / perPanel_kWh);
               const totalBatteries = Math.ceil(required_kWh / battery_kWh);
 
               return (
                 <div
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(2, minmax(300px, 400px))", // min 300px, max 400px
-                    justifyContent: "center",
+                    display: "flex",
+                    flexDirection: "column",
+                    width: "100%",
                     gap: "20px",
                     marginTop: "20px",
                   }}
@@ -589,8 +637,11 @@ function App() {
                   <div style={styles.card}>
                     <h4>📊 Input Parameters</h4>
                     <ul style={{ textAlign: "left" }}>
-                      <li>Average Load = <b>{average} kW</b></li>
-                      <li>Operating Hours = <b>{operatingM} h/day</b></li>
+                      <li>Genset Rating = <b>{kva} kVA</b></li>
+                      <li>Power Factor = <b>{pf}</b></li>
+                      <li>Min Load = <b>{min_kW.toFixed(2)} kW</b></li>
+                      <li>Max Load = <b>{max_kW.toFixed(2)} kW</b></li>
+                      <li>Average Load = <b>{avg_kW.toFixed(2)} kW</b></li>
                       <li>Diesel Saving Target = <b>{dieselSaving}%</b></li>
                     </ul>
                   </div>
@@ -599,9 +650,14 @@ function App() {
                   <div style={styles.card}>
                     <h4>🧮 Calculations</h4>
                     <ul style={{ textAlign: "left" }}>
-                      <li>Daily Genset Energy = {average} × {operatingM} = <b>{genset_kWh.toFixed(1)} kWh/day</b></li>
-                      <li>Required Solar Energy = {genset_kWh.toFixed(1)} × {dieselSaving/100} = <b>{required_kWh.toFixed(1)} kWh/day</b></li>
-                      <li>Solar Output per Panel = ({panelWatt/1000} × {peakSunHour}) = <b>{perPanel_kWh.toFixed(2)} kWh/day</b></li>
+                      <li>
+                        Required Solar Energy = {avg_kW.toFixed(2)} × {dieselSaving/100} ={" "}
+                        <b>{required_kWh.toFixed(2)} kWh/day</b>
+                      </li>
+                      <li>
+                        Solar Output per Panel = ({panelWatt/1000} × {peakSunHour}) ={" "}
+                        <b>{perPanel_kWh.toFixed(2)} kWh/day</b>
+                      </li>
                     </ul>
                   </div>
 
@@ -618,20 +674,19 @@ function App() {
                   {/* Card 4: System Requirement */}
                   <div style={styles.card}>
                     <h4>✅ System Requirement</h4>
-
                     {phase === "three" ? (
                       <ul style={{ textAlign: "left" }}>
                         <li>
                           Total Solar Panels ≈{" "}
                           <b>
-                            {required_kWh} ÷ ((615 ÷ 1000) × 3.42) ≈ {totalPanels}
+                            {required_kWh.toFixed(2)} ÷ {perPanel_kWh.toFixed(2)} ≈ {totalPanels}
                           </b>{" "}
                           (~{Math.ceil(totalPanels / 3)} per phase)
                         </li>
                         <li>
                           Total Batteries ≈{" "}
                           <b>
-                            {required_kWh} ÷ 5 ≈ {totalBatteries}
+                            {required_kWh.toFixed(2)} ÷ {battery_kWh} ≈ {totalBatteries}
                           </b>{" "}
                           (~{Math.ceil(totalBatteries / 3)} per phase)
                         </li>
@@ -641,13 +696,13 @@ function App() {
                         <li>
                           Total Solar Panels ≈{" "}
                           <b>
-                            {required_kWh} ÷ ((615 ÷ 1000) × 3.42) ≈ {totalPanels}
+                            {required_kWh.toFixed(2)} ÷ {perPanel_kWh.toFixed(2)} ≈ {totalPanels}
                           </b>
                         </li>
                         <li>
                           Total Batteries ≈{" "}
                           <b>
-                            {required_kWh} ÷ 5 ≈ {totalBatteries}
+                            {required_kWh.toFixed(2)} ÷ {battery_kWh} ≈ {totalBatteries}
                           </b>
                         </li>
                       </ul>
@@ -662,9 +717,9 @@ function App() {
             {/* Off-Grid */}
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, minmax(300px, 400px))",
-                justifyContent: "center",
+                display: "flex",
+                flexDirection: "column",
+                width: "100%",
                 gap: "20px",
                 marginTop: "20px",
               }}
@@ -729,11 +784,13 @@ function App() {
           style={styles.backButton}
           onClick={() => {
             setMode("");
+            setPhase("");
             setValue("");
             setOperatingM("");
             setRangeMin("");
             setRangeMax("");
             setAverage("");
+            setKva("");
             setPhase("");
             setConfirmed(false);
             setShowHelper(false);
@@ -741,6 +798,7 @@ function App() {
             setPower("");
             setHours("");
             setDieselSaving(50);
+            setHasGenset(null);
           }}
         >
           ← Start Over
