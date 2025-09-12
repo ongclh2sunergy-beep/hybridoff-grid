@@ -219,6 +219,66 @@ function App() {
               <>
                 <p style={{ marginTop: "15px" }}>Please enter your genset details:</p>
 
+                {/* Preset Usage Section */}
+                <div style={{ textAlign: "center", marginBottom: "10px" }}>
+                  <h4>💡 Quick Presets</h4>
+                  <p style={{ fontSize: "14px", color: "#555", margin: 0 }}>
+                    These buttons let you quickly fill in common load scenarios.
+                  </p>
+                </div>
+
+                {/* Quick Preset Buttons */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    gap: "10px",
+                    marginBottom: "15px",
+                  }}
+                >
+                  {/* Small Usage */}
+                  <button
+                    style={{ ...styles.modeButton, backgroundColor: "#4caf50" }}
+                    onClick={() => {
+                      setKva(30);
+                      setOperatingM(20);
+                      setRangeMin(18);
+                      setRangeMax(25);
+                      setAverage(21.5);
+                    }}
+                  >
+                    Small Usage
+                  </button>
+
+                  {/* Medium Usage */}
+                  <button
+                    style={{ ...styles.modeButton, backgroundColor: "#2196f3" }}
+                    onClick={() => {
+                      setKva(60);
+                      setOperatingM(40);
+                      setRangeMin(35);
+                      setRangeMax(50);
+                      setAverage(42.5);
+                    }}
+                  >
+                    Medium Usage
+                  </button>
+
+                  {/* High Usage */}
+                  <button
+                    style={{ ...styles.modeButton, backgroundColor: "#f44336" }}
+                    onClick={() => {
+                      setKva(120);
+                      setOperatingM(80);
+                      setRangeMin(70);
+                      setRangeMax(100);
+                      setAverage(85);
+                    }}
+                  >
+                    High Usage
+                  </button>
+                </div>
+
                 {/* Operating M */}
                 <label style={{ display: "block", marginTop: "15px" }}>
                   Operating M:
@@ -318,7 +378,7 @@ function App() {
             </button>
 
             {showHelper && (
-              <div style={styles.card}>
+              <div style={styles.centerCard}>
                 <h4>Appliance Calculator</h4>
 
                 {/* Guideline Card */}
@@ -471,28 +531,30 @@ function App() {
                 onChange={(e) => setCustomText(e.target.value)}
               />
 
+              <div style={{display: "flex", justifyContent: "center", gap:"10px"}}>
               {/* Copy Button */}
-              <button
-                style={styles.helpButton}
-                onClick={() => {
-                  navigator.clipboard.writeText(customText);
-                  setCopyMessage("✅ Custom list copied! Paste it into ChatGPT to calculate.");
-                  setTimeout(() => setCopyMessage(""), 3000); // Auto hide after 3s
-                }}
-              >
-                📋 Copy Text
-              </button>
+                <button
+                  style={styles.helpButton}
+                  onClick={() => {
+                    navigator.clipboard.writeText(customText);
+                    setCopyMessage("✅ Custom list copied! Paste it into ChatGPT to calculate.");
+                    setTimeout(() => setCopyMessage(""), 3000); // Auto hide after 3s
+                  }}
+                >
+                  📋 Copy Text
+                </button>
 
-              {/* NEW Ask ChatGPT Button */}
-              <button
-                style={{ ...styles.helpButton, marginLeft: "10px", backgroundColor: "#10a37f" }}
-                onClick={() => {
-                  const chatGPTUrl = `https://chat.openai.com/?q=${encodeURIComponent(customText)}`;
-                  window.open(chatGPTUrl, "_blank");
-                }}
-              >
-                🤖 Ask ChatGPT
-              </button>
+                {/* NEW Ask ChatGPT Button */}
+                <button
+                  style={{ ...styles.helpButton, marginLeft: "10px", backgroundColor: "#10a37f" }}
+                  onClick={() => {
+                    const chatGPTUrl = `https://chat.openai.com/?q=${encodeURIComponent(customText)}`;
+                    window.open(chatGPTUrl, "_blank");
+                  }}
+                >
+                  🤖 Ask ChatGPT
+                </button>
+              </div>
 
               {copyMessage && (
                 <p style={{ color: "green", fontSize: "14px", marginTop: "8px" }}>
@@ -1089,6 +1151,17 @@ const styles = {
     fontSize: "14px",
     textAlign: "left",
   },
+  centerCard: {
+    marginTop: "15px",
+    padding: "15px",
+    border: "1px solid #ddd",
+    borderRadius: "8px",
+    backgroundColor: "#fff",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    textAlign: "center"
+  }
 };
 
 export default App;
