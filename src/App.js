@@ -22,6 +22,7 @@ function App() {
       setAverage(((Number(rangeMin) + Number(rangeMax)) / 2).toFixed(1));
     }
   }, [rangeMin, rangeMax]);
+  const [showPresets, setShowPresets] = useState(false);
 
   // step 2: off-grid
   const [applianceList, setApplianceList] = useState([]);
@@ -187,31 +188,33 @@ function App() {
 
         {mode === "Hybrid" ? (
           <>
-            <p>Please select your genset phase first:</p>
-
-            {/* Phase Selection */}
-            <div style={{ marginTop: "10px", textAlign: "center" }}>
-              <label>
-                <input
-                  type="radio"
-                  name="phase"
-                  value="single"
-                  checked={phase === "single"}
-                  onChange={(e) => setPhase(e.target.value)}
-                />{" "}
-                Single Phase
-              </label>
-              <br />
-              <label>
-                <input
-                  type="radio"
-                  name="phase"
-                  value="three"
-                  checked={phase === "three"}
-                  onChange={(e) => setPhase(e.target.value)}
-                />{" "}
-                Three Phase
-              </label>
+            <div style={styles.card}>
+              <p>Please select your genset phase first:</p>
+              
+              {/* Phase Selection */}
+              <div style={{ marginTop:"10px"}}>
+                <label>
+                  <input
+                    type="radio"
+                    name="phase"
+                    value="single"
+                    checked={phase === "single"}
+                    onChange={(e) => setPhase(e.target.value)}
+                  />{" "}
+                  Single Phase
+                </label>
+                <br />
+                <label>
+                  <input
+                    type="radio"
+                    name="phase"
+                    value="three"
+                    checked={phase === "three"}
+                    onChange={(e) => setPhase(e.target.value)}
+                  />{" "}
+                  Three Phase
+                </label>
+              </div>
             </div>
 
             {/* Show genset details only if phase is selected */}
@@ -219,64 +222,77 @@ function App() {
               <>
                 <p style={{ marginTop: "15px" }}>Please enter your genset details:</p>
 
-                {/* Preset Usage Section */}
-                <div style={{ textAlign: "center", marginBottom: "10px" }}>
-                  <h4>💡 Quick Presets</h4>
-                  <p style={{ fontSize: "14px", color: "#555", margin: 0 }}>
-                    These buttons let you quickly fill in common load scenarios.
-                  </p>
-                </div>
-
-                {/* Quick Preset Buttons */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: "10px",
-                    marginBottom: "15px",
-                  }}
-                >
-                  {/* Small Usage */}
+                {/* Quick Presets Dropdown */}
+                <div style={{ marginTop: "20px", textAlign: "center" }}>
                   <button
-                    style={{ ...styles.modeButton, backgroundColor: "#4caf50" }}
-                    onClick={() => {
-                      setKva(30);
-                      setOperatingM(20);
-                      setRangeMin(18);
-                      setRangeMax(25);
-                      setAverage(21.5);
+                    onClick={() => setShowPresets(!showPresets)}
+                    style={{
+                      padding: "10px 20px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                      cursor: "pointer",
+                      backgroundColor: "#f5f5f5",
+                      fontWeight: "bold",
                     }}
                   >
-                    Small Usage
+                    💡 Quick Presets {showPresets ? "▲" : "▼"}
                   </button>
 
-                  {/* Medium Usage */}
-                  <button
-                    style={{ ...styles.modeButton, backgroundColor: "#2196f3" }}
-                    onClick={() => {
-                      setKva(60);
-                      setOperatingM(40);
-                      setRangeMin(35);
-                      setRangeMax(50);
-                      setAverage(42.5);
-                    }}
-                  >
-                    Medium Usage
-                  </button>
+                  {showPresets && (
+                    <div style={{ marginTop: "15px" }}>
+                      <p style={{ fontSize: "14px", color: "#555", marginBottom: "15px" }}>
+                        These buttons let you quickly fill in common load scenarios.
+                      </p>
 
-                  {/* High Usage */}
-                  <button
-                    style={{ ...styles.modeButton, backgroundColor: "#f44336" }}
-                    onClick={() => {
-                      setKva(120);
-                      setOperatingM(80);
-                      setRangeMin(70);
-                      setRangeMax(100);
-                      setAverage(85);
-                    }}
-                  >
-                    High Usage
-                  </button>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "center",
+                          gap: "10px",
+                          marginBottom: "15px",
+                        }}
+                      >
+                        <button
+                          style={{ ...styles.modeButton, backgroundColor: "#4caf50" }}
+                          onClick={() => {
+                            setKva(30);
+                            setOperatingM(20);
+                            setRangeMin(18);
+                            setRangeMax(25);
+                            setAverage(21.5);
+                          }}
+                        >
+                          Small Usage
+                        </button>
+
+                        <button
+                          style={{ ...styles.modeButton, backgroundColor: "#2196f3" }}
+                          onClick={() => {
+                            setKva(60);
+                            setOperatingM(40);
+                            setRangeMin(35);
+                            setRangeMax(50);
+                            setAverage(42.5);
+                          }}
+                        >
+                          Medium Usage
+                        </button>
+
+                        <button
+                          style={{ ...styles.modeButton, backgroundColor: "#f44336" }}
+                          onClick={() => {
+                            setKva(120);
+                            setOperatingM(80);
+                            setRangeMin(70);
+                            setRangeMax(100);
+                            setAverage(85);
+                          }}
+                        >
+                          High Usage
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Operating M */}
@@ -355,6 +371,31 @@ function App() {
                     max="24"
                     />
                 </label>
+
+                {/* Clear Button */}
+                <div style={{ textAlign: "center", marginTop: "20px" }}>
+                  <button
+                    onClick={() => {
+                      setOperatingM("");
+                      setRangeMin("");
+                      setRangeMax("");
+                      setAverage("");
+                      setKva("");
+                      setOperatingHours("");
+                    }}
+                    style={{
+                      padding: "10px 20px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                      cursor: "pointer",
+                      backgroundColor: "#ffebee",
+                      color: "#d32f2f",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    🧹 Clear All
+                  </button>
+                </div>
               </>
             )}
           </>
