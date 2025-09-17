@@ -410,149 +410,7 @@ function App() {
               placeholder="Enter electricity (kWh)"
             />
 
-            {/* Appliance calculator */}
-            <button
-              style={styles.helpButton}
-              onClick={() => setShowHelper(!showHelper)}
-            >
-              {showHelper ? "Close Helper" : "Help me calculate"}
-            </button>
-
-            {showHelper && (
-              <div style={styles.centerCard}>
-                <h4>Appliance Calculator</h4>
-
-                {/* Guideline Card */}
-                <div style={styles.guideline}>
-                  <h4>Guideline (Typical Power Ratings)</h4>
-                  <p>Use this as a reference if you’re not sure about your appliances:</p>
-
-                  <h5>❄ Air Conditioner</h5>
-                  <ul>
-                    <li>1.0 HP ≈ 750 W</li>
-                    <li>1.5 HP ≈ 1100 W</li>
-                    <li>2.0 HP ≈ 1500 W</li>
-                    <li>2.5 HP ≈ 1800 W</li>
-                  </ul>
-                  <h5>🧊 Refrigerator</h5>
-                  <ul>
-                    <li>Small (150–200 L): ~100 W</li>
-                    <li>Medium (250–350 L): ~150 W</li>
-                    <li>Large (400+ L): ~200–250 W</li>
-                  </ul>
-                </div>
-
-                {/* Appliance Dropdown */}
-                <select
-                  style={styles.input}
-                  value={appliance}
-                  onChange={(e) => setAppliance(e.target.value)}
-                >
-                  <option value="">-- Select Appliance --</option>
-                  {/* Air Conditioner */}
-                  <option value="Air Conditioner 1.0HP">Air Conditioner 1.0 HP</option>
-                  <option value="Air Conditioner 1.5HP">Air Conditioner 1.5 HP</option>
-                  <option value="Air Conditioner 2.0HP">Air Conditioner 2.0 HP</option>
-                  <option value="Air Conditioner 2.5HP">Air Conditioner 2.5 HP</option>
-
-                  {/* Refrigerator */}
-                  <option value="Refrigerator Small">Refrigerator Small</option>
-                  <option value="Refrigerator Medium">Refrigerator Medium</option>
-                  <option value="Refrigerator Large">Refrigerator Large</option>
-
-                  {/* Others */}
-                  <option value="Others">Others</option>
-                </select>
-
-                {/* Units */}
-                <input
-                  type="number"
-                  placeholder="Units"
-                  style={styles.input}
-                  value={units}
-                  onChange={(e) => setUnits(e.target.value)}
-                />
-
-                {/* Power (only if "Others") */}
-                {appliance === "Others" && (
-                  <input
-                    type="number"
-                    placeholder="Power (W)"
-                    style={styles.input}
-                    value={power}
-                    onChange={(e) => setPower(e.target.value)}
-                  />
-                )}
-
-                {/* Hours per day */}
-                <input
-                  type="number"
-                  placeholder="Hours per day"
-                  style={styles.input}
-                  value={hours}
-                  onChange={(e) => setHours(e.target.value)}
-                />
-
-                {/* Add Appliance Button */}
-                <button
-                  style={styles.modeButton}
-                  onClick={() => {
-                    if (appliance && units && hours) {
-                      let wattValue = power;
-
-                      // Assign default wattage automatically
-                      if (appliance.includes("1.0HP")) wattValue = 750;
-                      else if (appliance.includes("1.5HP")) wattValue = 1100;
-                      else if (appliance.includes("2.0HP")) wattValue = 1500;
-                      else if (appliance.includes("2.5HP")) wattValue = 1800;
-                      else if (appliance.includes("Small")) wattValue = 100;
-                      else if (appliance.includes("Medium")) wattValue = 150;
-                      else if (appliance.includes("Large")) wattValue = 225; // avg 200–250
-                      else if (appliance === "Others") wattValue = Number(power);
-
-                      const kwh = (units * wattValue * hours) / 1000;
-                      setApplianceList((prev) => [
-                        ...prev,
-                        { appliance, units, power: wattValue, hours, kwh },
-                      ]);
-                      setValue((prev) => (Number(prev) || 0) + kwh);
-
-                      setAppliance("");
-                      setUnits("");
-                      setPower("");
-                      setHours("");
-                    }
-                  }}
-                >
-                  Add Appliance
-                </button>
-
-                {/* Show added appliances */}
-                {applianceList.length > 0 && (
-                  <div style={{ marginTop: "10px", textAlign: "left" }}>
-                    <h4>Added Appliances:</h4>
-                    <ul>
-                      {applianceList.map((item, idx) => (
-                        <li key={idx}>
-                          {item.units} × {item.appliance} ({item.power}W × {item.hours}h) ={" "}
-                          {item.kwh.toFixed(2)} kWh
-                        </li>
-                      ))}
-                    </ul>
-                    <p><b>Total: {value || 0} kWh</b></p>
-                    <button
-                      style={styles.backButton}
-                      onClick={() => {
-                        setApplianceList([]);
-                        setValue("");
-                      }}
-                    >
-                      Clear All
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+            <h3>OR</h3>
 
             <div style={styles.card}>
               <h4>📝 Custom Appliance List</h4>
@@ -607,27 +465,43 @@ function App() {
             {/* Ask about genset backup */}
             <div style={styles.card}>
               <h4>Backup Genset</h4>
-              <p>Do you have a backup genset?</p>
-              <label>
-                <input
-                  type="radio"
-                  name="backup"
-                  value="yes"
-                  checked={hasGenset === "yes"}
-                  onChange={() => setHasGenset("yes")}
-                />
-                Yes
-              </label>
-              <label style={{ marginLeft: "15px" }}>
-                <input
-                  type="radio"
-                  name="backup"
-                  value="no"
-                  checked={hasGenset === "no"}
-                  onChange={() => setHasGenset("no")}
-                />
-                No
-              </label>
+              <p>What is your genset configuration?</p>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px"}}>
+
+                <label>
+                  <input
+                    type="radio"
+                    name="backup"
+                    value="hybrid"
+                    checked={hasGenset === "hybrid"}
+                    onChange={() => setHasGenset("hybrid")}
+                  />
+                  Hybrid Mode
+                </label>
+
+                <label>
+                  <input
+                    type="radio"
+                    name="backup"
+                    value="standby"
+                    checked={hasGenset === "standby"}
+                    onChange={() => setHasGenset("standby")}
+                  />
+                  Standby Mode
+                </label>
+
+                <label>
+                  <input
+                    type="radio"
+                    name="backup"
+                    value="na"
+                    checked={hasGenset === "na"}
+                    onChange={() => setHasGenset("na")}
+                  />
+                  Not Applicable
+                </label>
+              </div>
             </div>
           </>
         )}
@@ -776,7 +650,7 @@ function App() {
             {(() => {
               const pf = 0.9;
               const peakSunHour = 3.42;
-              const panelWatt = 615; // W per panel
+              const panelWatt = 640; // W per panel
               const battery_kWh = 5; // Assume each battery ~5 kWh usable
 
               // Step 1: Convert kVA to kW capacity (for display/reference)
@@ -908,16 +782,15 @@ function App() {
               <div style={styles.card}>
                 <h4>📥 Input Parameters</h4>
                 <p>Electricity Usage: <b>{value} kWh/day</b></p>
-                <p>Backup Genset: <b>{hasGenset === "yes" ? "Yes" : "No"}</b></p>
+                <p>Backup Genset: <b>{hasGenset}</b></p>
               </div>
 
               {/* System Constants */}
               <div style={styles.card}>
                 <h4>⚙️ System Constants</h4>
                 <p>Peak Sun Hour = <b>3.42 h/day</b></p>
-                <p>Solar Panel Wattage = <b>615 W</b></p>
-                <p>Battery Capacity = <b>5 kWh</b></p>
-                <p>Autonomy = <b>{hasGenset === "yes" ? "1 Day" : "3 Days"}</b></p>
+                <p>Solar Panel Wattage = <b>640 W</b></p>
+                <p>Autonomy = <b>3 Days</b></p>
               </div>
 
               {/* Calculation */}
@@ -926,18 +799,16 @@ function App() {
                 <p>Required kWh = <b>{value}</b> kWh/day</p>
 
                 <p>
-                  Panels Needed ≈{" "}
-                  <b>
-                    {value} ÷ ((615 ÷ 1000) × 3.42) ≈{" "}
-                    {Math.ceil(Number(value) / ((615 / 1000) * 3.42))}
-                  </b>
+                  Panels Needed ≈ <br />
+                  <b>({value} × 1.3) ÷ ((615 ÷ 1000) × 3.42)</b> <br />
+                  ≈ <b>{Math.ceil((Number(value) * 1.3) / ((615 / 1000) * 3.42))}</b> panels
                 </p>
 
                 <p>
-                  Batteries Needed ≈{" "}
+                  Battery Storage Needed ≈{" "}
                   <b>
-                    ({value} × {hasGenset === "yes" ? 1 : 3}) ÷ 5 ≈{" "}
-                    {Math.ceil((Number(value) * (hasGenset === "yes" ? 1 : 3)) / 5)}
+                    ({value} × 3) ≈{" "} 
+                    {Math.ceil((Number(value) * 3))} kWh
                   </b>
                 </p>
               </div>
@@ -947,19 +818,16 @@ function App() {
                 <h4>✅ System Requirement</h4>
                 <p>
                   Total Solar Panels:{" "}
-                  <b>{Math.ceil(Number(value) / ((615 / 1000) * 3.42))}</b>
+                  <b>{Math.ceil((Number(value) * 1.3) / ((615 / 1000) * 3.42))}</b>
                 </p>
                 <p>
-                  Total Batteries:{" "}
+                  Required Battery Storage:{" "}
                   <b>
-                    {Math.ceil((Number(value) * (hasGenset === "yes" ? 1 : 3)) / 5)}
+                    {Number(value) * 3} kWh
                   </b>
                 </p>
                 <p style={{ marginTop: "10px", fontStyle: "italic", color: "#555" }}>
-                  ⚠️ Batteries provide autonomy for{" "}
-                  {hasGenset === "yes"
-                    ? "1 day (with genset backup)"
-                    : "3 days (no backup genset)"}.
+                  ⚠️ Batteries provide autonomy for <b>3 days</b>.
                 </p>
               </div>
             </div>
@@ -991,7 +859,7 @@ function App() {
 
               // constants
               const peakSunHour = 3.42;
-              const panelWatt = 615;
+              const panelWatt = 640;
               const battery_kWh = 5;
 
               let totalPanels = 0;
