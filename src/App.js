@@ -698,7 +698,6 @@ function App() {
                       <li>kVA → kW Conversion = <b>kW = kVA × PF</b></li>
                       <li>Peak Sun Hours = <b>{peakSunHour}</b> h/day</li>
                       <li>Solar Panel Size = <b>{panelWatt} W</b></li>
-                      <li>Battery Capacity = <b>{battery_kWh} kWh</b></li>
                     </ul>
                   </div>
 
