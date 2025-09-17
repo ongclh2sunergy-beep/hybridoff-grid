@@ -464,7 +464,7 @@ function App() {
 
             {/* Ask about genset mode */}
             <div style={styles.card}>
-              <h4>Generator Mode</h4>
+              <h4>🔌 Generator Mode</h4>
               <p>What is your generator operating mode?</p>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "8px"}}>
@@ -541,6 +541,10 @@ function App() {
                     setErrorMessage("⚠️ Please enter the genset rating (kVA).");
                     return;
                   }
+                  if(!operatingHours){
+                    setErrorMessage("⚠️ Please enter the operating hour.");
+                    return;
+                  }
                   // ✅ Guardrails
                    if (Number(operatingM) <= 0) {
                     setErrorMessage("⚠️ Operating M cannot be negative.");
@@ -560,6 +564,10 @@ function App() {
                   }
                   if (Number(average) < Number(rangeMin) || Number(average) > Number(rangeMax)) {
                     setErrorMessage("⚠️ Average M must be between Min and Max.");
+                    return;
+                  }
+                  if (Number(operatingHours) <= 0 || Number(operatingHours) > 24) {
+                    setErrorMessage("⚠️ Operating hour must be between 1 and 24.");
                     return;
                   }
                 } else {
@@ -782,7 +790,7 @@ function App() {
               <div style={styles.card}>
                 <h4>📥 Input Parameters</h4>
                 <p>Electricity Usage: <b>{value} kWh/day</b></p>
-                <p>Backup Genset: <b>{hasGenset}</b></p>
+                <p>Generator Mode: <b>{hasGenset}</b></p>
               </div>
 
               {/* System Constants */}
