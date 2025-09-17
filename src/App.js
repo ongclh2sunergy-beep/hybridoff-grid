@@ -808,8 +808,8 @@ function App() {
 
                 <p>
                   Panels Needed ≈ <br />
-                  <b>({value} × 1.3) ÷ ((615 ÷ 1000) × 3.42)</b> <br />
-                  ≈ <b>{Math.ceil((Number(value) * 1.3) / ((615 / 1000) * 3.42))}</b> panels
+                  <b>({value} × 1.3) ÷ ((640 ÷ 1000) × 3.42)</b> <br />
+                  ≈ <b>{Math.ceil((Number(value) * 1.3) / ((640 / 1000) * 3.42))}</b> panels
                 </p>
 
                 <p>
@@ -826,7 +826,7 @@ function App() {
                 <h4>✅ System Requirement</h4>
                 <p>
                   Total Solar Panels:{" "}
-                  <b>{Math.ceil((Number(value) * 1.3) / ((615 / 1000) * 3.42))}</b>
+                  <b>{Math.ceil((Number(value) * 1.3) / ((640 / 1000) * 3.42))}</b>
                 </p>
                 <p>
                   Required Battery Storage:{" "}
@@ -868,10 +868,8 @@ function App() {
               // constants
               const peakSunHour = 3.42;
               const panelWatt = 640;
-              const battery_kWh = 5;
 
               let totalPanels = 0;
-              let totalBatteries = 0;
               let required_kWh = 0;
               let genset_kWh = 0;
 
@@ -879,14 +877,16 @@ function App() {
                 genset_kWh = Number(average) * Number(operatingHours); // average load × hours
                 required_kWh = genset_kWh * (dieselSaving / 100);
 
-                totalPanels = Math.ceil(required_kWh / ((panelWatt / 1000) * peakSunHour));
-                totalBatteries = Math.ceil(required_kWh / battery_kWh);
+                totalPanels = Math.ceil((required_kWh * 1.3) / ((panelWatt / 1000) * peakSunHour));
+
               } else {
-                const autonomy = hasGenset === "yes" ? 1 : 3;
                 required_kWh = Number(value);
-                totalPanels = Math.ceil(Number(value) / ((panelWatt / 1000) * peakSunHour));
-                totalBatteries = Math.ceil((required_kWh * autonomy) / battery_kWh);
-              }
+                required_kWh = Number(value || 0); // off-grid daily usage
+                totalPanels = Math.ceil((required_kWh * 1.3) / ((panelWatt / 1000) * peakSunHour));
+              };
+
+              const requiredBatteryStorageKwh =
+                mode === "Hybrid" ? required_kWh : required_kWh * 3;
 
               // Title
               doc.setFontSize(20);
@@ -913,7 +913,17 @@ function App() {
               } else {
                 doc.text(`Mode: Off-Grid`, 14, 47);
                 doc.text(`Daily Usage: ${value} kWh/day`, 14, 55);
-                doc.text(`Backup Genset: ${hasGenset === "yes" ? "Yes" : "No"}`, 14, 63);
+                doc.text(
+                  `Generator Mode: ${
+                    hasGenset === "hybrid"
+                      ? "Hybrid Mode"
+                      : hasGenset === "standby"
+                      ? "Standby Mode"
+                      : "Not Applicable"
+                  }`,
+                  14,
+                  63
+                );
               }
 
               // Section: System Constants
@@ -926,7 +936,6 @@ function App() {
               doc.text(`Power Factor: 0.9`, 14, 122);
               doc.text(`Peak Sun Hours: ${peakSunHour} h/day`, 14, 130);
               doc.text(`Solar Panel Size: ${panelWatt} W`, 14, 138);
-              doc.text(`Battery Capacity: ${battery_kWh} kWh`, 14, 146);
 
               // Section: Full Calculations
               doc.setFillColor(230, 240, 255);
@@ -939,13 +948,13 @@ function App() {
                 doc.text(`1) Daily Genset Energy = Avg Load × Hours = ${average} × ${operatingHours} = ${genset_kWh.toFixed(1)} kWh/day`, 14, 173);
                 doc.text(`2) Required Solar = ${genset_kWh.toFixed(1)} × (${dieselSaving}% ÷ 100) = ${required_kWh.toFixed(1)} kWh/day`, 14, 181);
                 doc.text(`3) Per Panel Output = (${panelWatt} ÷ 1000) × ${peakSunHour} = ${(panelWatt/1000*peakSunHour).toFixed(2)} kWh/day`, 14, 189);
-                doc.text(`4) Total Panels = ${required_kWh.toFixed(1)} ÷ ${(panelWatt/1000*peakSunHour).toFixed(2)} = ${totalPanels}`, 14, 197);
-                doc.text(`5) Total Batteries = ${required_kWh.toFixed(1)} ÷ ${battery_kWh} = ${totalBatteries}`, 14, 205);
+                doc.text(`4) Total Panels (with 30% storage) = ${required_kWh.toFixed(1)} × 1.3 ÷ ${((panelWatt / 1000) * peakSunHour).toFixed(2)} = ${totalPanels}`, 14, 197);
+                doc.text(`5) Required Battery Storage = ${requiredBatteryStorageKwh.toFixed(1)} kWh/day`, 14, 205);
               } else {
                 doc.text(`1) Required Energy = ${required_kWh} kWh/day`, 14, 173);
                 doc.text(`2) Per Panel Output = (${panelWatt} ÷ 1000) × ${peakSunHour} = ${(panelWatt/1000*peakSunHour).toFixed(2)} kWh/day`, 14, 181);
-                doc.text(`3) Total Panels = ${required_kWh} ÷ ${(panelWatt/1000*peakSunHour).toFixed(2)} = ${totalPanels}`, 14, 189);
-                doc.text(`4) Total Batteries = ${required_kWh} ÷ ${battery_kWh} = ${totalBatteries}`, 14, 197);
+                doc.text(`3) Total Panels (with 30% storage) = ${required_kWh} × 1.3 ÷ ${((panelWatt / 1000) *peakSunHour).toFixed(2)} = ${totalPanels}`, 14, 189);
+                doc.text(`4) Required Battery Storage = ${requiredBatteryStorageKwh.toFixed(1)} kWh/day`, 14, 197);
               }
 
               // Section: Final System Requirement
@@ -957,12 +966,7 @@ function App() {
               doc.setFontSize(12);
               doc.setTextColor(20, 100, 20);
               doc.text(`Solar Panels Needed: ${totalPanels}`, 14, 232);
-              doc.text(`Batteries Needed: ${totalBatteries}`, 14, 240);
-
-              // Footer
-              doc.setTextColor(120);
-              doc.setFontSize(10);
-              doc.text("Generated by Solar Sizing Tool", 14, 280);
+              doc.text(`Battery Storage Required: ${requiredBatteryStorageKwh.toFixed(1)} kWh/day`, 14, 240);
 
               doc.save("system-sizing-report.pdf");
             }}
