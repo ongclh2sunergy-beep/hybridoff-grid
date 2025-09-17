@@ -462,10 +462,10 @@ function App() {
               )}
             </div>
 
-            {/* Ask about genset backup */}
+            {/* Ask about genset mode */}
             <div style={styles.card}>
-              <h4>Backup Genset</h4>
-              <p>What is your genset configuration?</p>
+              <h4>Generator Mode</h4>
+              <p>What is your generator operating mode?</p>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "8px"}}>
 
