@@ -25,16 +25,8 @@ function App() {
   const [showPresets, setShowPresets] = useState(false);
 
   // step 2: off-grid
-  const [applianceList, setApplianceList] = useState([]);
   const [hasGenset, setHasGenset] = useState(null); // for backup genset
-  const [units, setUnits] = useState("");
   const [errorMessage, setErrorMessage] = useState("");  
-
-  // Appliance helper states
-  const [showHelper, setShowHelper] = useState(false);
-  const [appliance, setAppliance] = useState("");
-  const [power, setPower] = useState("");
-  const [hours, setHours] = useState("");
 
   // Custom Appliance
   const [customText, setCustomText] = useState(
@@ -122,8 +114,8 @@ function App() {
               <FaBatteryFull size={40} />
               <GiPowerGenerator size={40} />
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "16px", color: "red" }}>
-              <FaTimesCircle /> No TNB
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "16px", color: "#D2042D" }}>
+              <FaTimesCircle /> <strong>No TNB</strong>
             </div>
           </button>
         </div>
@@ -165,12 +157,6 @@ function App() {
                 setAverage("");
                 setKva("");
                 setValue("");
-                setShowHelper(false);
-                setAppliance("");
-                setUnits("");
-                setPower("");
-                setHours("");
-                setApplianceList([]);
                 setHasGenset(null);
                 setErrorMessage("")
                 setOperatingHours("")
@@ -659,7 +645,6 @@ function App() {
               const pf = 0.9;
               const peakSunHour = 3.42;
               const panelWatt = 640; // W per panel
-              const battery_kWh = 5; // Assume each battery ~5 kWh usable
 
               // Step 1: Convert kVA to kW capacity (for display/reference)
               const gensetCapacity = Number(kva) * pf;
@@ -677,8 +662,7 @@ function App() {
 
               // Step 5: Solar panel & battery sizing
               const perPanel_kWh = (panelWatt / 1000) * peakSunHour;
-              const totalPanels = Math.ceil(required_kWh / perPanel_kWh);
-              const totalBatteries = Math.ceil(required_kWh / battery_kWh);
+              const totalPanels = Math.ceil((required_kWh * 1.3) / perPanel_kWh);
 
               return (
                 <div
@@ -740,16 +724,12 @@ function App() {
                         <li>
                           Total Solar Panels ≈{" "}
                           <b>
-                            {required_kWh.toFixed(1)} ÷ {perPanel_kWh.toFixed(2)} ≈ {totalPanels}
+                            ({required_kWh.toFixed(1)} * 1.3) ÷ {perPanel_kWh.toFixed(2)} ≈ {totalPanels}
                           </b>{" "}
                           (~{Math.ceil(totalPanels / 3)} per phase)
                         </li>
                         <li>
-                          Total Batteries ≈{" "}
-                          <b>
-                            {required_kWh.toFixed(1)} ÷ {battery_kWh} ≈ {totalBatteries}
-                          </b>{" "}
-                          (~{Math.ceil(totalBatteries / 3)} per phase)
+                          Required Battery Storage = <b>{required_kWh.toFixed(1)} kWh</b>
                         </li>
                       </ul>
                     ) : (
@@ -757,14 +737,11 @@ function App() {
                         <li>
                           Total Solar Panels ≈{" "}
                           <b>
-                            {required_kWh.toFixed(1)} ÷ {perPanel_kWh.toFixed(2)} ≈ {totalPanels}
+                            ({required_kWh.toFixed(1)} * 1.3) ÷ {perPanel_kWh.toFixed(2)} ≈ {totalPanels}
                           </b>
                         </li>
                         <li>
-                          Total Batteries ≈{" "}
-                          <b>
-                            {required_kWh.toFixed(1)} ÷ {battery_kWh} ≈ {totalBatteries}
-                          </b>
+                          Required Battery Storage = <b>{required_kWh.toFixed(1)} kWh</b>
                         </li>
                       </ul>
                     )}
@@ -902,8 +879,9 @@ function App() {
               doc.setFontSize(12);
               if (mode === "Hybrid") {
                 const kvaToKw = (Number(kva) * 0.9).toFixed(1);
+                doc.setFont("helvetica", "normal")
                 doc.text(`Mode: Hybrid`, 14, 47);
-                doc.text(`Genset Rating: ${kva} kVA (≈ ${kvaToKw} kW at PF 0.9)`, 14, 55);
+                doc.text(`Genset Rating: ${kva} kVA (= ${kvaToKw} kW at PF 0.9)`, 14, 55);
                 doc.text(`Min Load: ${rangeMin} kW`, 14, 63);
                 doc.text(`Avg Load: ${average} kW`, 14, 71);
                 doc.text(`Max Load: ${rangeMax} kW`, 14, 79);
@@ -995,10 +973,6 @@ function App() {
               setKva("");
               setPhase("");
               setConfirmed(false);
-              setShowHelper(false);
-              setAppliance("");
-              setPower("");
-              setHours("");
               setOperatingHours("");
               setDieselSaving(50);
               setHasGenset(null);
