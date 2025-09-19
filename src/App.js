@@ -660,10 +660,6 @@ function App() {
                     setErrorMessage("⚠️ Please enter your electricity usage (kWh).");
                     return;
                   }
-                  if (hasGenset === null) {
-                    setErrorMessage("⚠️ Please select whether you have a backup genset.");
-                    return;
-                  }
                 }
 
                 // If everything is filled, clear error and confirm
