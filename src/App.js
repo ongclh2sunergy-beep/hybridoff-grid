@@ -23,6 +23,7 @@ function App() {
     }
   }, [rangeMin, rangeMax]);
   const [showPresets, setShowPresets] = useState(false);
+  const [gensetLiters, setGensetLiters] = useState("");
 
   // step 2: off-grid
   const [hasGenset, setHasGenset] = useState(null); // for backup genset
@@ -35,7 +36,16 @@ function App() {
   const [copyMessage, setCopyMessage] = useState("");
 
   // step 3: hybrid
-  const [dieselSaving, setDieselSaving] = useState(50); // % saving from genset
+  const [dieselSaving, setDieselSaving] = useState(0); // % saving from genset
+
+  // Auto update based on mode
+  useEffect(() => {
+    if (mode === "Hybrid") {
+      setDieselSaving(50);
+    } else if (mode === "Standby") {
+      setDieselSaving(100);
+    }
+  }, [mode]);
 
   // step 3: off-grid
 
@@ -66,7 +76,7 @@ function App() {
           <button
             onClick={() => setMode("Hybrid")}
             style={{
-              width: 220,
+              width: 250,
               height: 150,
               padding: "15px",
               fontSize: "16px",
@@ -77,11 +87,38 @@ function App() {
               flexDirection: "column",
               alignItems: "center",
               gap: "10px",
-              background: "#fff",
+              color: "#fff",
               backgroundColor: "#007BFF",
             }}
           >
-            <strong>Hybrid</strong>
+            <strong>Solar + Battery + Genset (Hybrid)</strong>
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <FaSolarPanel size={40} />
+              <FaBatteryFull size={40} />
+              <GiPowerGenerator size={40} />
+            </div>
+          </button>
+
+          {/* Standby Button */}
+          <button
+            onClick={() => setMode("Standby")}
+            style={{
+              width: 250,
+              height: 150,
+              padding: "15px",
+              fontSize: "16px",
+              cursor: "pointer",
+              borderRadius: "12px",
+              border: "1px solid #ccc",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "10px",
+              color: "#fff",
+              backgroundColor: "#6A5ACD",
+            }}
+          >
+            <strong>Solar + Battery + Genset (Standby)</strong>
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
               <FaSolarPanel size={40} />
               <FaBatteryFull size={40} />
@@ -93,7 +130,7 @@ function App() {
           <button
             onClick={() => setMode("Off-Grid")}
             style={{
-              width: 220,
+              width: 250,
               height: 150,
               padding: "15px",
               fontSize: "16px",
@@ -108,11 +145,10 @@ function App() {
               backgroundColor: "#FF8C00",
             }}
           >
-            <strong>Off-Grid</strong>
+            <strong>Solar + Battery (Off-Grid)</strong>
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
               <FaSolarPanel size={40} />
               <FaBatteryFull size={40} />
-              <GiPowerGenerator size={40} />
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "16px", color: "#D2042D" }}>
               <FaTimesCircle /> <strong>No TNB</strong>
@@ -160,6 +196,7 @@ function App() {
                 setHasGenset(null);
                 setErrorMessage("")
                 setOperatingHours("")
+                setGensetLiters("")
                 setCustomText(
                   "1. Air Conditioner – 1.5 HP – 1 unit – 8 hours/day\n2. Refrigerator – Medium – 1 unit – 24 hours/day\n\nPlease calculate the kWh/day for these appliances"
                 );
@@ -170,9 +207,9 @@ function App() {
           </div>
 
 
-        <h2>{mode} System Setup</h2>
+        <h2>{mode} Mode System Setup</h2>
 
-        {mode === "Hybrid" ? (
+        {mode === "Hybrid" || mode === "Standby"? (
           <>
             <div style={styles.card}>
               <p>Please select your genset phase first:</p>
@@ -206,181 +243,285 @@ function App() {
             {/* Show genset details only if phase is selected */}
             {phase && (
               <>
-                <p style={{ marginTop: "15px" }}>Please enter your genset details:</p>
+              <br />
+                <p style={{ textAlign:"center", marginTop: "15px" }}><strong>Please enter your genset details</strong>:</p>
+                
+                <div style={styles.card}>
+                  {/* NEW: Genset Liters Input */}
+                  <div style={{ textAlign:"center", marginTop: "15px" }}>
+                    <label>
+                      Genset Fuel Capacity (Liters):
+                    </label>
+                    <input
+                      type="number"
+                      value={gensetLiters}
+                      onChange={(e) => setGensetLiters(e.target.value)}
+                      style={{
+                        ...styles.input, 
+                        marginTop:"8px",
+                        textAlign:"center",}}
+                      placeholder="Enter genset liters"
+                    />
+                  </div>
 
-                {/* Quick Presets Dropdown */}
-                <div style={{ marginTop: "20px", textAlign: "center" }}>
-                  <button
-                    onClick={() => setShowPresets(!showPresets)}
-                    style={{
-                      padding: "10px 20px",
-                      borderRadius: "8px",
-                      border: "1px solid #ccc",
-                      cursor: "pointer",
-                      backgroundColor: "#f5f5f5",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    💡 Quick Presets {showPresets ? "▲" : "▼"}
-                  </button>
+                  {/* Auto Calculate Button */}
+                  <div style={{ textAlign: "center", marginTop: "5px" }}>
+                    <button
+                      onClick={() => {
+                        if (!gensetLiters) return;
 
-                  {showPresets && (
-                    <div style={{ marginTop: "15px" }}>
-                      <p style={{ fontSize: "14px", color: "#555", marginBottom: "15px" }}>
-                        These buttons let you quickly fill in common load scenarios.
-                      </p>
+                        // --- Assumptions ---
+                        // 0.25 L/kWh diesel consumption
+                        // 8 hours runtime
+                        // PF = 0.8
+                        const kWh = gensetLiters / 0.25; 
+                        const estimatedKW = kWh / 8; // assume 8h runtime
+                        const estimatedKVA = estimatedKW / 0.8;
 
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "center",
-                          gap: "10px",
-                          marginBottom: "15px",
-                        }}
-                      >
-                        <button
-                          style={{ ...styles.modeButton, backgroundColor: "#4caf50" }}
-                          onClick={() => {
-                            setKva(30);
-                            setOperatingM(20);
-                            setRangeMin(18);
-                            setRangeMax(25);
-                            setAverage(21.5);
-                          }}
-                        >
-                          Small Usage
-                        </button>
+                        let Imax = 0;
+                        if (phase === "three") {
+                          // Three-phase @ 400V
+                          Imax = (1000 * estimatedKVA) / (Math.sqrt(3) * 400);
+                        } else {
+                          // Single-phase @ 230V
+                          Imax = (1000 * estimatedKVA) / 230;
+                        }
 
-                        <button
-                          style={{ ...styles.modeButton, backgroundColor: "#2196f3" }}
-                          onClick={() => {
-                            setKva(60);
-                            setOperatingM(40);
-                            setRangeMin(35);
-                            setRangeMax(50);
-                            setAverage(42.5);
-                          }}
-                        >
-                          Medium Usage
-                        </button>
+                        const Imin = Imax * 0.3; // assume min 30% load
+                        const Iavg = (Imax + Imin) / 2;
 
-                        <button
-                          style={{ ...styles.modeButton, backgroundColor: "#f44336" }}
-                          onClick={() => {
-                            setKva(120);
-                            setOperatingM(80);
-                            setRangeMin(70);
-                            setRangeMax(100);
-                            setAverage(85);
-                          }}
-                        >
-                          High Usage
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                        // Update states
+                        setOperatingM(Math.round(Iavg));
+                        setRangeMin(Math.round(Imin));
+                        setRangeMax(Math.round(Imax));
+                        setAverage(Math.round(Iavg));
+                        setKva(Math.round(estimatedKVA)); // convert to kVA
+                      }}
+                      style={{
+                        padding: "10px 20px",
+                        borderRadius: "8px",
+                        border: "1px solid #ccc",
+                        cursor: "pointer",
+                        backgroundColor: "#e8f5e9",
+                        color: "#2e7d32",
+                        fontWeight: "bold",
+                        marginTop: "10px",
+                      }}
+                    >
+                      🔍 Estimate Amps from Liters
+                    </button>
+                  </div>
                 </div>
 
-                {/* Operating M */}
-                <label style={{ display: "block", marginTop: "15px" }}>
-                  Operating M:
-                </label>
-                <input
-                  type="number"
-                  value={operatingM}
-                  onChange={(e) => setOperatingM(e.target.value)}
-                  style={styles.input}
-                  placeholder="Enter operating M"
-                />
+                <h3>OR</h3>
 
-                {/* Range Min */}
-                <label style={{ display: "block", marginTop: "15px" }}>
-                  Range Min (M):
-                </label>
-                <input
-                  type="number"
-                  value={rangeMin}
-                  onChange={(e) => setRangeMin(e.target.value)}
-                  style={styles.input}
-                  placeholder="Enter minimum M"
-                />
+                <div style={styles.card}>
+                  {/* Quick Presets Dropdown */}
+                  <div style={{ marginTop: "20px", textAlign: "center" }}>
+                    <button
+                      onClick={() => setShowPresets(!showPresets)}
+                      style={{
+                        padding: "10px 20px",
+                        borderRadius: "8px",
+                        border: "1px solid #ccc",
+                        cursor: "pointer",
+                        backgroundColor: "#f5f5f5",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      💡 Quick Presets {showPresets ? "▲" : "▼"}
+                    </button>
 
-                {/* Range Max */}
-                <label style={{ display: "block", marginTop: "15px" }}>
-                  Range Max (M):
-                </label>
-                <input
-                  type="number"
-                  value={rangeMax}
-                  onChange={(e) => setRangeMax(e.target.value)}
-                  style={styles.input}
-                  placeholder="Enter maximum M"
-                />
+                    {showPresets && (
+                      <div style={{ marginTop: "15px" }}>
+                        <p style={{ fontSize: "14px", color: "#555", marginBottom: "15px" }}>
+                          These buttons let you quickly fill in common load scenarios.
+                        </p>
 
-                {/* Average */}
-                <label style={{ display: "block", marginTop: "15px" }}>
-                  Average (M):
-                </label>
-                <input
-                  type="number"
-                  value={average}
-                  readOnly
-                  style={{
-                    ...styles.input,
-                    backgroundColor: "#f5f5f5",
-                    cursor: "not-allowed",
-                  }}
-                />
+                        <div
+                          style={{
+                            display: "grid",
+                            justifyContent: "center",
+                            // gap: "20px",
+                            // marginBottom: "15px",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <button
+                            style={{ ...styles.modeButton, backgroundColor: "#4caf50", minwidth:"150px", }}
+                            onClick={() => {
+                              setKva(25);
+                              setOperatingM(18);
+                              setRangeMin(15);
+                              setRangeMax(22);
+                              setAverage(18.5);
+                            }}
+                          >
+                            Small Usage <br />
+                            <span style={{ fontSize: "12px"}}>(Shops / Small Offices)</span>
 
-                {/* kVA */}
-                <label style={{ display: "block", marginTop: "15px" }}>
-                  Genset Rating (kVA):
-                </label>
-                <input
-                  type="number"
-                  value={kva}
-                  onChange={(e) => setKva(e.target.value)}
-                  style={styles.input}
-                  placeholder="Enter genset kVA"
-                />
+                          </button>
 
-                {/* Operating Hours */}
-                <label style={{ display: "block", marginTop: "15px" }}>
-                  Operating Hours per Day:
-                  <input 
-                    type = "number"
-                    value={operatingHours}
-                    onChange={(e) => setOperatingHours(e.target.value)}
-                    style={styles.input}
-                    placeholder="Enter operating hours/day"
-                    min="1"
-                    max="24"
+                          <button
+                            style={{ ...styles.modeButton, backgroundColor: "#2196f3", minWidth:"150px", }}
+                            onClick={() => {
+                              setKva(80);
+                              setOperatingM(60);
+                              setRangeMin(55);
+                              setRangeMax(70);
+                              setAverage(60);
+                            }}
+                          >
+                            Medium Usage <br />
+                            <span style={{ fontSize: "12px"}}>(Restaurant / School / Factory Section)</span>
+                          </button>
+
+                          <button
+                            style={{ ...styles.modeButton, backgroundColor: "#f44336", minWidth: "150px", }}
+                            onClick={() => {
+                              setKva(200);
+                              setOperatingM(150);
+                              setRangeMin(120);
+                              setRangeMax(180);
+                              setAverage(150);
+                            }}
+                          >
+                            High Usage <br />
+                            <span style={{ fontSize: "12px" }}>(Large Factory / Hotel / Hospital)</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Operating Amps */}
+                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
+                    <label>
+                      Operating Amps:
+                    </label>
+                    <input
+                      type="number"
+                      value={operatingM}
+                      onChange={(e) => setOperatingM(e.target.value)}
+                      style={{
+                          ...styles.input, 
+                          marginTop:"8px",
+                          textAlign:"center",}}
+                      placeholder="Enter operating Amps"
                     />
-                </label>
+                  </div>
 
-                {/* Clear Button */}
-                <div style={{ textAlign: "center", marginTop: "20px" }}>
-                  <button
-                    onClick={() => {
-                      setOperatingM("");
-                      setRangeMin("");
-                      setRangeMax("");
-                      setAverage("");
-                      setKva("");
-                      setOperatingHours("");
-                    }}
-                    style={{
-                      padding: "10px 20px",
-                      borderRadius: "8px",
-                      border: "1px solid #ccc",
-                      cursor: "pointer",
-                      backgroundColor: "#ffebee",
-                      color: "#d32f2f",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    🧹 Clear All
-                  </button>
+                  {/* Range Min */}
+                  <div style={{ display: "block", marginTop: "15px", textAlign: "center" }}>
+                    <label>
+                      Range Min (Amps):
+                    </label>
+                    <input
+                      type="number"
+                      value={rangeMin}
+                      onChange={(e) => setRangeMin(e.target.value)}
+                      style={{
+                          ...styles.input, 
+                          marginTop:"8px",
+                          textAlign:"center",}}
+                      placeholder="Enter minimum Amps"
+                    />
+                  </div>
+
+                  {/* Range Max */}
+                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
+                    <label>
+                      Range Max (Amps):
+                    </label>
+                    <input
+                      type="number"
+                      value={rangeMax}
+                      onChange={(e) => setRangeMax(e.target.value)}
+                      style={{
+                            ...styles.input, 
+                            marginTop:"8px",
+                            textAlign:"center",}}
+                      placeholder="Enter maximum Amps"
+                    />
+                  </div>
+
+                  {/* Average */}
+                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
+                    <label>
+                      Average (Amps):
+                    </label>
+                    <input
+                      type="number"
+                      value={average}
+                      readOnly
+                      style={{
+                        ...styles.input,
+                        backgroundColor: "#f5f5f5",
+                        cursor: "not-allowed",
+                      }}
+                    />
+                  </div>
+
+                  {/* kVA */}
+                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
+                    <label>
+                      Genset Rating (kVA):
+                    </label>
+                    <input
+                      type="number"
+                      value={kva}
+                      onChange={(e) => setKva(e.target.value)}
+                      style={{
+                            ...styles.input, 
+                            marginTop:"8px",
+                            textAlign:"center",}}
+                      placeholder="Enter genset kVA"
+                    />
+                  </div>
+
+                  {/* Operating Hours */}
+                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
+                    <label>
+                      Operating Hours per Day:
+                      <input 
+                        type = "number"
+                        value={operatingHours}
+                        onChange={(e) => setOperatingHours(e.target.value)}
+                        style={{
+                          ...styles.input, 
+                          marginTop:"8px",
+                          textAlign:"center",}}
+                        placeholder="Enter operating hours/day"
+                        min="1"
+                        max="24"
+                        />
+                    </label>
+                  </div>
+
+                  {/* Clear Button */}
+                  <div style={{ textAlign: "center", marginTop: "20px" }}>
+                    <button
+                      onClick={() => {
+                        setOperatingM("");
+                        setRangeMin("");
+                        setRangeMax("");
+                        setAverage("");
+                        setKva("");
+                        setOperatingHours("");
+                      }}
+                      style={{
+                        padding: "10px 20px",
+                        borderRadius: "8px",
+                        border: "1px solid #ccc",
+                        cursor: "pointer",
+                        backgroundColor: "#ffebee",
+                        color: "#d32f2f",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      🧹 Clear All
+                    </button>
+                  </div>
                 </div>
               </>
             )}
@@ -447,80 +588,38 @@ function App() {
                 </p>
               )}
             </div>
-
-            {/* Ask about genset mode */}
-            <div style={styles.card}>
-              <h4>🔌 Generator Mode</h4>
-              <p>What is your generator operating mode?</p>
-
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px"}}>
-
-                <label>
-                  <input
-                    type="radio"
-                    name="backup"
-                    value="hybrid"
-                    checked={hasGenset === "hybrid"}
-                    onChange={() => setHasGenset("hybrid")}
-                  />
-                  Hybrid Mode
-                </label>
-
-                <label>
-                  <input
-                    type="radio"
-                    name="backup"
-                    value="standby"
-                    checked={hasGenset === "standby"}
-                    onChange={() => setHasGenset("standby")}
-                  />
-                  Standby Mode
-                </label>
-
-                <label>
-                  <input
-                    type="radio"
-                    name="backup"
-                    value="na"
-                    checked={hasGenset === "na"}
-                    onChange={() => setHasGenset("na")}
-                  />
-                  Not Applicable
-                </label>
-              </div>
-            </div>
           </>
         )}
 
           {/* Main content (Confirm + Error Message) */}
-          <div style={{ textAlign: "center", marginTop: "40px" }}>
+          <div style={{ textAlign: "center"}}>
             {/* Show error message */}
             {errorMessage && (
-              <p style={{ color: "red", marginTop: "10px" }}>{errorMessage}</p>
+              <p style={{ color: "red"}}>{errorMessage}</p>
             )}
 
             <button
               style={styles.modeButton}
               onClick={() => {
-                if (mode === "Hybrid") {
+                if (mode === "Hybrid" || mode === "Standby") {
                   if (!phase) {
                     setErrorMessage("⚠️ Please select a genset phase.");
                     return;
                   }
                   if (!operatingM) {
-                    setErrorMessage("⚠️ Please enter operating M.");
+                    setErrorMessage("⚠️ Please enter operating Amps.");
                     return;
                   }
                   if (!rangeMin) {
-                    setErrorMessage("⚠️ Please enter the minimum M.");
+                    setErrorMessage("⚠️ Please enter the minimum Amps.");
                     return;
                   }
                   if (!rangeMax) {
-                    setErrorMessage("⚠️ Please enter the maximum M.");
+                    setErrorMessage("⚠️ Please enter the maximum Amps.");
                     return;
                   }
                   if (!average) {
-                    setErrorMessage("⚠️ Please enter the average M.");
+                    setErrorMessage("⚠️ Please enter the average Amps.");
                     return;
                   }
                   if (!kva) {
@@ -533,7 +632,7 @@ function App() {
                   }
                   // ✅ Guardrails
                    if (Number(operatingM) <= 0) {
-                    setErrorMessage("⚠️ Operating M cannot be negative.");
+                    setErrorMessage("⚠️ Operating Amps cannot be negative.");
                     return;
                   }
                   if (Number(kva) <= 0) {
@@ -545,11 +644,11 @@ function App() {
                     return;
                   }
                   if (Number(rangeMin) > Number(rangeMax)) {
-                    setErrorMessage("⚠️ Minimum M cannot be greater than Maximum M.");
+                    setErrorMessage("⚠️ Minimum Amps cannot be greater than Maximum Amps.");
                     return;
                   }
                   if (Number(average) < Number(rangeMin) || Number(average) > Number(rangeMax)) {
-                    setErrorMessage("⚠️ Average M must be between Min and Max.");
+                    setErrorMessage("⚠️ Average Amps must be between Min and Max.");
                     return;
                   }
                   if (Number(operatingHours) <= 0 || Number(operatingHours) > 24) {
@@ -625,7 +724,7 @@ function App() {
           You selected: <b>{mode}</b>
         </p>
 
-        {mode === "Hybrid" ? (
+        {mode === "Hybrid" || mode === "Standby"? (
           <>
             {/* Diesel saving slider */}
             <label style={{ display: "block", margin: "20px 0" }}>
@@ -849,7 +948,7 @@ function App() {
               let required_kWh = 0;
               let genset_kWh = 0;
 
-              if (mode === "Hybrid") {
+              if (mode === "Hybrid" || mode === "Standby") {
                 genset_kWh = Number(average) * Number(operatingHours); // average load × hours
                 required_kWh = genset_kWh * (dieselSaving / 100);
 
@@ -862,7 +961,7 @@ function App() {
               };
 
               const requiredBatteryStorageKwh =
-                mode === "Hybrid" ? required_kWh : required_kWh * 3;
+                mode === "Hybrid" || mode === "Standby" ? required_kWh : required_kWh * 3;
 
               // Title
               doc.setFontSize(20);
@@ -877,7 +976,7 @@ function App() {
               doc.text("Input Parameters", 14, 37);
 
               doc.setFontSize(12);
-              if (mode === "Hybrid") {
+              if (mode === "Hybrid" || mode === "Standby") {
                 const kvaToKw = (Number(kva) * 0.9).toFixed(1);
                 doc.setFont("helvetica", "normal")
                 doc.text(`Mode: Hybrid`, 14, 47);
@@ -921,7 +1020,7 @@ function App() {
               doc.text("Full Calculations", 14, 163);
 
               doc.setFontSize(11);
-              if (mode === "Hybrid") {
+              if (mode === "Hybrid" || mode === "Standby") {
                 doc.text(`1) Daily Genset Energy = Avg Load × Hours = ${average} × ${operatingHours} = ${genset_kWh.toFixed(1)} kWh/day`, 14, 173);
                 doc.text(`2) Required Solar = ${genset_kWh.toFixed(1)} × (${dieselSaving}% ÷ 100) = ${required_kWh.toFixed(1)} kWh/day`, 14, 181);
                 doc.text(`3) Per Panel Output = (${panelWatt} ÷ 1000) × ${peakSunHour} = ${(panelWatt/1000*peakSunHour).toFixed(2)} kWh/day`, 14, 189);
@@ -976,6 +1075,7 @@ function App() {
               setOperatingHours("");
               setDieselSaving(50);
               setHasGenset(null);
+              setGensetLiters("")
             }}
           >
             ← Start Over
