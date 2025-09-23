@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaSolarPanel, FaBatteryFull, FaTimesCircle } from "react-icons/fa";
 import { GiPowerGenerator } from "react-icons/gi";
+import { AiFillDatabase } from "react-icons/ai";
 import { motion } from "framer-motion";
 import jsPDF from "jspdf";
 
@@ -24,6 +25,7 @@ function App() {
   }, [rangeMin, rangeMax]);
   const [showPresets, setShowPresets] = useState(false);
   const [gensetLiters, setGensetLiters] = useState("");
+  const [showEstimateMsg, setShowEstimateMsg] = useState(false);
 
   // step 2: off-grid
   const [hasGenset, setHasGenset] = useState(null); // for backup genset
@@ -91,10 +93,10 @@ function App() {
               backgroundColor: "#007BFF",
             }}
           >
-            <strong>Solar + Battery + Genset (Hybrid)</strong>
+            <strong>Solar + Battery <br /> + Genset (Hybrid Mode)</strong>
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
               <FaSolarPanel size={40} />
-              <FaBatteryFull size={40} />
+              <AiFillDatabase size={40} />
               <GiPowerGenerator size={40} />
             </div>
           </button>
@@ -121,7 +123,7 @@ function App() {
             <strong>Solar + Battery + Genset (Standby)</strong>
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
               <FaSolarPanel size={40} />
-              <FaBatteryFull size={40} />
+              <AiFillDatabase size={40} />
               <GiPowerGenerator size={40} />
             </div>
           </button>
@@ -148,7 +150,7 @@ function App() {
             <strong>Solar + Battery (Off-Grid)</strong>
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
               <FaSolarPanel size={40} />
-              <FaBatteryFull size={40} />
+              <AiFillDatabase size={40} />
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", fontSize: "16px", color: "#D2042D" }}>
               <FaTimesCircle /> <strong>No TNB</strong>
@@ -296,6 +298,12 @@ function App() {
                         setRangeMax(Math.round(Imax));
                         setAverage(Math.round(Iavg));
                         setKva(Math.round(estimatedKVA)); // convert to kVA
+                      
+                      // Show confirmation text
+                      setShowEstimateMsg(true);
+
+                      // Hide it after 3 seconds
+                      setTimeout(() => setShowEstimateMsg(false), 2500);
                       }}
                       style={{
                         padding: "10px 20px",
@@ -310,6 +318,13 @@ function App() {
                     >
                       🔍 Estimate Amps from Liters
                     </button>
+
+                    {/* Confirmation Text */}
+                    {showEstimateMsg && (
+                      <p style={{ marginTop: "10px", color: "#2e7d32", fontWeight: "bold" }}>
+                        ✅ Estimated values have been filled in!
+                      </p>
+                    )}
                   </div>
                 </div>
 
