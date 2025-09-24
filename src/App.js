@@ -197,7 +197,7 @@ function App() {
                 setValue("");
                 setHasGenset(null);
                 setErrorMessage("")
-                setOperatingHours("")
+                setOperatingHours(8)
                 setGensetLiters("")
                 setCustomText(
                   "1. Air Conditioner – 1.5 HP – 1 unit – 8 hours/day\n2. Refrigerator – Medium – 1 unit – 24 hours/day\n\nPlease calculate the kWh/day for these appliances"
@@ -533,7 +533,7 @@ function App() {
                         setRangeMax("");
                         setAverage("");
                         setKva("");
-                        setOperatingHours("");
+                        setOperatingHours(8);
                       }}
                       style={{
                         padding: "10px 20px",
@@ -1094,7 +1094,7 @@ function App() {
               setKva("");
               setPhase("");
               setConfirmed(false);
-              setOperatingHours("");
+              setOperatingHours(8);
               setDieselSaving(50);
               setHasGenset(null);
               setGensetLiters("")
