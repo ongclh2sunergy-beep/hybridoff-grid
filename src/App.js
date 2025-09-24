@@ -17,7 +17,7 @@ function App() {
   const [phase, setPhase] = useState("");
   const [operatingM, setOperatingM] = useState("");
   const [kva, setKva] = useState("");
-  const [operatingHours, setOperatingHours] = useState("")
+  const [operatingHours, setOperatingHours] = useState(8);
   useEffect(() => {
     if (rangeMin && rangeMax) {
       setAverage(((Number(rangeMin) + Number(rangeMax)) / 2).toFixed(1));
@@ -266,6 +266,21 @@ function App() {
                     />
                   </div>
 
+                  {/* Operating Hours Slider */}
+                  <div style={{ marginTop: "15px" }}>
+                    <label>
+                      Operating Hours: <b>{operatingHours}h</b>
+                      <input
+                        type="range"
+                        min="1"
+                        max="24"
+                        value={operatingHours}
+                        onChange={(e) => setOperatingHours(Number(e.target.value))}
+                        style={{ width: "100%" }}
+                      />
+                    </label>
+                  </div>
+                  
                   {/* Auto Calculate Button */}
                   <div style={{ textAlign: "center", marginTop: "5px" }}>
                     <button
@@ -275,10 +290,10 @@ function App() {
                         // --- Assumptions ---
                         // 0.25 L/kWh diesel consumption
                         // 8 hours runtime
-                        // PF = 0.8
+                        // PF = 0.85
                         const kWh = gensetLiters / 0.25; 
-                        const estimatedKW = kWh / 8; // assume 8h runtime
-                        const estimatedKVA = estimatedKW / 0.8;
+                        const estimatedKW = kWh / operatingHours; // assume 8h runtime
+                        const estimatedKVA = estimatedKW / 0.85;
 
                         let Imax = 0;
                         if (phase === "three") {
@@ -494,22 +509,18 @@ function App() {
                     />
                   </div>
 
-                  {/* Operating Hours */}
-                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
+                  {/* Operating Hours Slider */}
+                  <div style={{ display: "block", marginTop: "15px", textAlign: "center" }}>
                     <label>
-                      Operating Hours per Day:
-                      <input 
-                        type = "number"
-                        value={operatingHours}
-                        onChange={(e) => setOperatingHours(e.target.value)}
-                        style={{
-                          ...styles.input, 
-                          marginTop:"8px",
-                          textAlign:"center",}}
-                        placeholder="Enter operating hours/day"
+                      Operating Hours per Day: <b>{operatingHours}h</b>
+                      <input
+                        type="range"
                         min="1"
                         max="24"
-                        />
+                        value={operatingHours}
+                        onChange={(e) => setOperatingHours(Number(e.target.value))}
+                        style={{ width: "80%", marginTop: "10px" }}
+                      />
                     </label>
                   </div>
 
@@ -752,7 +763,7 @@ function App() {
 
             {/* Calculation */}
             {(() => {
-              const pf = 0.9;
+              const pf = 0.85;
               const peakSunHour = 3.42;
               const panelWatt = 640; // W per panel
 
@@ -788,7 +799,7 @@ function App() {
                   <div style={styles.card}>
                     <h4>🔧 System Constants</h4>
                     <ul style={{ textAlign: "left" }}>
-                      <li>Power Factor (PF) = <b>0.9</b></li>
+                      <li>Power Factor (PF) = <b>0.85</b></li>
                       <li>kVA → kW Conversion = <b>kW = kVA × PF</b></li>
                       <li>Peak Sun Hours = <b>{peakSunHour}</b> h/day</li>
                       <li>Solar Panel Size = <b>{panelWatt} W</b></li>
@@ -988,10 +999,10 @@ function App() {
 
               doc.setFontSize(12);
               if (mode === "Hybrid" || mode === "Standby") {
-                const kvaToKw = (Number(kva) * 0.9).toFixed(1);
+                const kvaToKw = (Number(kva) * 85).toFixed(1);
                 doc.setFont("helvetica", "normal")
                 doc.text(`Mode: Hybrid`, 14, 47);
-                doc.text(`Genset Rating: ${kva} kVA (= ${kvaToKw} kW at PF 0.9)`, 14, 55);
+                doc.text(`Genset Rating: ${kva} kVA (= ${kvaToKw} kW at PF 0.85)`, 14, 55);
                 doc.text(`Min Load: ${rangeMin} kW`, 14, 63);
                 doc.text(`Avg Load: ${average} kW`, 14, 71);
                 doc.text(`Max Load: ${rangeMax} kW`, 14, 79);
@@ -1020,7 +1031,7 @@ function App() {
               doc.text("System Constants", 14, 112);
 
               doc.setFontSize(12);
-              doc.text(`Power Factor: 0.9`, 14, 122);
+              doc.text(`Power Factor: 0.85`, 14, 122);
               doc.text(`Peak Sun Hours: ${peakSunHour} h/day`, 14, 130);
               doc.text(`Solar Panel Size: ${panelWatt} W`, 14, 138);
 
