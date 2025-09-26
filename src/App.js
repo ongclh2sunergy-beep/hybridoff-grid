@@ -26,6 +26,7 @@ function App() {
   const [showPresets, setShowPresets] = useState(false);
   const [gensetLiters, setGensetLiters] = useState("");
   const [showEstimateMsg, setShowEstimateMsg] = useState(false);
+  const [calcDetails, setCalcDetails] = useState(null);
 
   // step 2: off-grid
   const [hasGenset, setHasGenset] = useState(null); // for backup genset
@@ -194,6 +195,7 @@ function App() {
                 setRangeMax("");
                 setAverage("");
                 setKva("");
+                setCalcDetails(null);
                 setValue("");
                 setHasGenset(null);
                 setErrorMessage("")
@@ -314,6 +316,16 @@ function App() {
                         setAverage(Math.round(Iavg));
                         setKva(Math.round(estimatedKVA)); // convert to kVA
                       
+                      // Save calculation breakdown
+                      setCalcDetails({
+                        kWh: kWh,
+                        estimatedKW: Math.round(estimatedKW),
+                        estimatedKVA: Math.round(estimatedKVA),
+                        Imax: Math.round(Imax),
+                        Imin: Math.round(Imin),
+                        Iavg: Math.round(Iavg),
+                      });
+
                       // Show confirmation text
                       setShowEstimateMsg(true);
 
@@ -341,6 +353,51 @@ function App() {
                       </p>
                     )}
                   </div>
+
+                  {/* Dropdown for Calculation Details */}
+                  {calcDetails && (
+                    <details style={{ marginTop: "15px", textAlign: "left" }}>
+                      <summary style={{ cursor: "pointer", fontWeight: "bold", color: "#007BFF" }}>
+                        📊 Show Calculation Details
+                      </summary>
+                      <div style={{ marginTop: "10px", paddingLeft: "15px", color: "#333" }}>
+                        <p>
+                          🔹 Fuel → Energy: <br />
+                          Formula: <code>Liters ÷ 0.25</code> <br />
+                          Result: <b>{gensetLiters} ÷ 0.25 = {calcDetails.kWh} kWh</b>
+                        </p>
+                        <p>
+                          🔹 Energy → Power (kW): <br />
+                          Formula: <code>kWh ÷ Operating Hours</code> <br />
+                          Result: <b>{calcDetails.kWh} ÷ {operatingHours} = {calcDetails.estimatedKW} kW</b>
+                        </p>
+                        <p>
+                          🔹 Power → Apparent Power (kVA): <br />
+                          Formula: <code>kW ÷ PF (0.85)</code> <br />
+                          Result: <b>{calcDetails.estimatedKW} ÷ 0.85 = {calcDetails.estimatedKVA} kVA</b>
+                        </p>
+                        <p>
+                          🔹 Max Current (Imax): <br />
+                          Formula: 
+                          {phase === "three" 
+                            ? <code>(1000 × kVA) ÷ (√3 × 400)</code> 
+                            : <code>(1000 × kVA) ÷ 230</code>
+                          } <br />
+                          Result: <b>{calcDetails.Imax} A</b>
+                        </p>
+                        <p>
+                          🔹 Min Current (Imin): <br />
+                          Formula: <code>Imax × 0.3</code> <br />
+                          Result: <b>{calcDetails.Imin} A</b>
+                        </p>
+                        <p>
+                          🔹 Avg Current (Iavg): <br />
+                          Formula: <code>(Imax + Imin) ÷ 2</code> <br />
+                          Result: <b>{calcDetails.Iavg} A</b>
+                        </p>
+                      </div>
+                    </details>
+                  )}
                 </div>
 
                 <h3>OR</h3>
@@ -533,6 +590,7 @@ function App() {
                         setRangeMax("");
                         setAverage("");
                         setKva("");
+                        setCalcDetails(null);
                         setOperatingHours(8);
                       }}
                       style={{
@@ -743,7 +801,14 @@ function App() {
 
         <h2>🌞 System Summary</h2>
         <p>
-          You selected: <b>{mode}</b>
+          You selected:{" "}
+          <b>
+            {mode === "Hybrid"
+              ? <>Solar + Battery + <br /> Generator (Hybrid Mode)</>
+              : mode === "Standby"
+              ? <>Solar + Battery + <br /> Generator (Standby Mode)</>
+              : "Solar + Battery (Off-Grid)"}
+          </b>
         </p>
 
         {mode === "Hybrid" || mode === "Standby"? (
@@ -887,7 +952,6 @@ function App() {
               <div style={styles.card}>
                 <h4>📥 Input Parameters</h4>
                 <p>Electricity Usage: <b>{value} kWh/day</b></p>
-                <p>Generator Mode: <b>{hasGenset}</b></p>
               </div>
 
               {/* System Constants */}
@@ -1092,6 +1156,7 @@ function App() {
               setRangeMax("");
               setAverage("");
               setKva("");
+              setCalcDetails(null);
               setPhase("");
               setConfirmed(false);
               setOperatingHours(8);
