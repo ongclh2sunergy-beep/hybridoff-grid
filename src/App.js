@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaSolarPanel, FaBatteryFull, FaTimesCircle } from "react-icons/fa";
+import { FaSolarPanel, FaTimesCircle } from "react-icons/fa";
 import { GiPowerGenerator } from "react-icons/gi";
 import { AiFillDatabase } from "react-icons/ai";
 import { motion } from "framer-motion";
@@ -710,10 +710,6 @@ function App() {
                     setErrorMessage("⚠️ Please enter the genset rating (kVA).");
                     return;
                   }
-                  if(!operatingHours){
-                    setErrorMessage("⚠️ Please enter the operating hour.");
-                    return;
-                  }
                   // ✅ Guardrails
                    if (Number(operatingM) <= 0) {
                     setErrorMessage("⚠️ Operating Amps cannot be negative.");
@@ -733,10 +729,6 @@ function App() {
                   }
                   if (Number(average) < Number(rangeMin) || Number(average) > Number(rangeMax)) {
                     setErrorMessage("⚠️ Average Amps must be between Min and Max.");
-                    return;
-                  }
-                  if (Number(operatingHours) <= 0 || Number(operatingHours) > 24) {
-                    setErrorMessage("⚠️ Operating hour must be between 1 and 24.");
                     return;
                   }
                 } else {
