@@ -121,7 +121,7 @@ function App() {
               backgroundColor: "#6A5ACD",
             }}
           >
-            <strong>Solar + Battery + Genset (Standby)</strong>
+            <strong>Solar + Battery <br /> + Genset (Standby Mode)</strong>
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
               <FaSolarPanel size={40} />
               <AiFillDatabase size={40} />
