@@ -820,113 +820,223 @@ function App() {
 
             {/* Calculation */}
             {(() => {
-              const pf = 0.85;
-              const peakSunHour = 3.42;
-              const panelWatt = 640; // W per panel
+            // --- Constants ---
+            const pf = 0.85;
+            const sqrt3 = 1.732;
+            const singleV = 230;
+            const threeV = 400;
+            const solarCost = 1800;
+            const batteryCost = 660;
+            const inverterCost = 4000;
+            const installCost = 1000;
+            const dieselCost = 0.9;
+            const tax = 0.24;
+            const panelCapacity = 0.64;
+            const peakSunHour = 3.5;
+            const days = 30;
 
-              // Step 1: Convert kVA to kW capacity (for display/reference)
-              const gensetCapacity = Number(kva) * pf;
+            // --- Inputs ---
+            const selectedPhase = phase === "single" ? "Single Phase" : "Three Phase";
+            const operatingAmp = operatingM || 140;
+            const kFactor = selectedPhase === "Single Phase" ? 0.1955 : 0.5889;
 
-              // Step 2: Use min, avg, max loads directly from Step 2 (already in kW)
-              const minLoad = Number(rangeMin);
-              const avgLoad = Number(average);
-              const maxLoad = Number(rangeMax);
+            // --- Calculations ---
+            const singlePhaseCalc = (singleV * pf) / 1000;
+            const threePhaseCalc = (threeV * pf * sqrt3) / 1000;
+            const required_kWh = operatingAmp * (dieselSaving / 100) * kFactor;
 
-              // Step 3: Daily genset energy (kWh/day)
-              const genset_kWh = avgLoad * Number(operatingHours);
+            // 🔹 Round up solar normally, but battery to nearest 5
+            const solarNeeded = Math.ceil(required_kWh / panelCapacity);
+            const batteryRaw = (required_kWh / 2) * 2;
+            const batteryNeeded = Math.ceil(batteryRaw / 5) * 5; // Ceiling to nearest 5
 
-              // Step 4: Required solar contribution (based on diesel saving %)
-              const required_kWh = genset_kWh * (dieselSaving / 100);
+            const solarRM = (solarNeeded * panelCapacity) * solarCost;
+            const batteryRM = batteryNeeded * batteryCost;
+            const totalRM = solarRM + batteryRM + inverterCost + installCost;
+            const saving = (solarNeeded * panelCapacity) * peakSunHour * days * dieselCost;
+            const netCost = totalRM * (1 - tax);      // apply tax to total
+            const annualSaving = saving * 12;         // convert monthly saving -> annual
+            const roiYears = annualSaving > 0 ? netCost / annualSaving : NaN;
 
-              // Step 5: Solar panel & battery sizing
-              const perPanel_kWh = (panelWatt / 1000) * peakSunHour;
-              const totalPanels = Math.ceil((required_kWh * 1.3) / perPanel_kWh);
+            // --- Styles ---
+            const card = {
+              background: "#e6f0ff",
+              borderRadius: "12px",
+              padding: "20px",
+              marginTop: "20px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            };
 
-              return (
-                <div
+            const sectionCard = {
+              background: "#ffffff",
+              border: "1px solid #ddd",
+              borderRadius: "10px",
+              padding: "12px 16px",
+              marginBottom: "14px",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+            };
+
+            const sectionHeader = {
+              fontSize: "16px",
+              fontWeight: "bold",
+              color: "#1565c0",
+              marginBottom: "8px",
+              borderBottom: "2px solid #e3f2fd",
+              paddingBottom: "4px",
+            };
+
+            const table = {
+              width: "100%",
+              borderCollapse: "collapse",
+              fontSize: "14px",
+            };
+
+            const tdStyle = {
+              padding: "6px 4px",
+              borderBottom: "1px solid #eee",
+            };
+
+            const label = { color: "#003366" };
+            const value = { fontWeight: "bold", color: "#000" };
+
+            // --- JSX ---
+            return (
+              <div
+                style={{
+                  ...card,
+                  background: "#f9fbfd",
+                  padding: "18px",
+                  borderRadius: "14px",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "20px",
+                }}
+              >
+                {/* --- Header --- */}
+                <h3
                   style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    width: "100%",
-                    gap: "20px",
-                    marginTop: "20px",
+                    margin: "0",
+                    color: "#1e88e5",
+                    borderBottom: "2px solid #e3f2fd",
+                    paddingBottom: "6px",
                   }}
                 >
-                  {/* Card 1: System Constants */}
-                  <div style={styles.card}>
-                    <h4>🔧 System Constants</h4>
-                    <ul style={{ textAlign: "left" }}>
-                      <li>Power Factor (PF) = <b>0.85</b></li>
-                      <li>kVA → kW Conversion = <b>kW = kVA × PF</b></li>
-                      <li>Peak Sun Hours = <b>{peakSunHour}</b> h/day</li>
-                      <li>Solar Panel Size = <b>{panelWatt} W</b></li>
-                    </ul>
-                  </div>
+                  📘 Calculation Summary ({selectedPhase})
+                </h3>
 
-                  {/* Card 2: Input Parameters */}
-                  <div style={styles.card}>
-                    <h4>📊 Input Parameters</h4>
-                    <ul style={{ textAlign: "left" }}>
-                      <li>Genset Rating = <b>{kva} kVA</b> (≈ {gensetCapacity.toFixed(1)} kW)</li>
-                      <li>Operating Hours = <b>{operatingHours} h/day</b></li>
-                      <li>Diesel Saving Target = <b>{dieselSaving}%</b></li>
-                    </ul>
-                  </div>
-
-                  {/* Card 3: Load (from Step 2) */}
-                  <div style={styles.card}>
-                    <h4>⚡ Load Information</h4>
-                    <ul style={{ textAlign: "left" }}>
-                      <li>Min Load = <b>{minLoad} kW</b></li>
-                      <li>Avg Load = <b>{avgLoad} kW</b></li>
-                      <li>Max Load = <b>{maxLoad} kW</b></li>
-                    </ul>
-                  </div>
-
-                  {/* Card 4: Energy Calculations */}
-                  <div style={styles.card}>
-                    <h4>🧮 Energy Calculations</h4>
-                    <ul style={{ textAlign: "left" }}>
-                      <li>Daily Genset Energy = {avgLoad} × {operatingHours} = <b>{genset_kWh.toFixed(1)} kWh/day</b></li>
-                      <li>Required Solar Energy = {genset_kWh.toFixed(1)} × {dieselSaving/100} = <b>{required_kWh.toFixed(1)} kWh/day</b></li>
-                      <li>Solar Output per Panel = ({panelWatt/1000} × {peakSunHour}) = <b>{perPanel_kWh.toFixed(2)} kWh/day</b></li>
-                    </ul>
-                  </div>
-
-                  {/* Card 5: System Requirement */}
-                  <div style={styles.card}>
-                    <h4>✅ System Requirement</h4>
-
-                    {phase === "three" ? (
-                      <ul style={{ textAlign: "left" }}>
-                        <li>
-                          Total Solar Panels ≈{" "}
-                          <b>
-                            ({required_kWh.toFixed(1)} * 1.3) ÷ {perPanel_kWh.toFixed(2)} ≈ {totalPanels}
-                          </b>{" "}
-                          (~{Math.ceil(totalPanels / 3)} per phase)
-                        </li>
-                        <li>
-                          Required Battery Storage = <b>{required_kWh.toFixed(1)} kWh</b>
-                        </li>
-                      </ul>
-                    ) : (
-                      <ul style={{ textAlign: "left" }}>
-                        <li>
-                          Total Solar Panels ≈{" "}
-                          <b>
-                            ({required_kWh.toFixed(1)} * 1.3) ÷ {perPanel_kWh.toFixed(2)} ≈ {totalPanels}
-                          </b>
-                        </li>
-                        <li>
-                          Required Battery Storage = <b>{required_kWh.toFixed(1)} kWh</b>
-                        </li>
-                      </ul>
-                    )}
-                  </div>
+                {/* --- Section 1: Phase Calculations --- */}
+                <div style={sectionCard}>
+                  <h4 style={sectionHeader}>🔹 Phase Conversion</h4>
+                  <table style={table}>
+                    <tbody>
+                      <tr>
+                        <td style={tdStyle}>Single Phase</td>
+                        <td style={tdStyle}>230 × 0.85 / 1000</td>
+                        <td style={tdStyle}>= {singlePhaseCalc.toFixed(4)} kW</td>
+                      </tr>
+                      <tr>
+                        <td style={tdStyle}>Three Phase</td>
+                        <td style={tdStyle}>400 × 0.85 × 1.732 / 1000</td>
+                        <td style={tdStyle}>= {threePhaseCalc.toFixed(4)} kW</td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
-              );
-            })()}
+
+                {/* --- Section 2: Energy Needs --- */}
+                <div style={sectionCard}>
+                  <h4 style={sectionHeader}>⚡ Energy Requirement</h4>
+                  <table style={table}>
+                    <tbody>
+                      <tr>
+                        <td style={tdStyle}>Required kWh</td>
+                        <td style={tdStyle}>
+                          {operatingAmp} × ({dieselSaving}% ÷ 100) × {kFactor}
+                        </td>
+                        <td style={tdStyle}>= {required_kWh.toFixed(3)} kWh</td>
+                      </tr>
+                      <tr>
+                        <td style={tdStyle}>Solar Panel Needed</td>
+                        <td style={tdStyle}>{required_kWh.toFixed(3)} ÷ 0.64</td>
+                        <td style={tdStyle}>= {solarNeeded} pcs</td>
+                      </tr>
+                      <tr>
+                        <td style={tdStyle}>Battery Needed</td>
+                        <td style={tdStyle}>
+                          ({required_kWh.toFixed(2)} ÷ 2) × 2
+                        </td>
+                        <td style={tdStyle}>= {batteryNeeded} kWh</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* --- Section 3: Cost Breakdown --- */}
+                <div style={sectionCard}>
+                  <h4 style={sectionHeader}>💰 Cost Breakdown</h4>
+                  <table style={table}>
+                    <tbody>
+                      <tr>
+                        <td style={tdStyle}>Solar Cost</td>
+                        <td style={tdStyle} colSpan={2}>
+                          RM {solarRM.toLocaleString()}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={tdStyle}>Battery Cost</td>
+                        <td style={tdStyle} colSpan={2}>
+                          RM {batteryRM.toLocaleString()}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={tdStyle}>Inverter + Install</td>
+                        <td style={tdStyle} colSpan={2}>
+                          RM {(inverterCost + installCost).toLocaleString()}
+                        </td>
+                      </tr>
+                      <tr
+                        style={{
+                          ...tdStyle,
+                          borderTop: "1px solid #ccc",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        <td>Total System Cost</td>
+                        <td colSpan={2}>RM {totalRM.toLocaleString()}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* --- Section 4: Saving & ROI --- */}
+                <div style={sectionCard}>
+                  <h4 style={sectionHeader}>💡 Saving & ROI</h4>
+                  <table style={table}>
+                    <tbody>
+                      <tr>
+                        <td style={tdStyle}>Monthly Saving</td>
+                        <td style={tdStyle}>
+                          ({solarNeeded} × 0.64 × 3.5 × 30 × 0.9)
+                        </td>
+                        <td style={tdStyle}>= RM {saving.toLocaleString()}</td>
+                      </tr>
+                      <tr>
+                        <td style={tdStyle}>ROI</td>
+                        <td style={tdStyle}>
+                          (RM{totalRM.toLocaleString()} × {1 - tax}) ÷ (RM
+                          {saving.toFixed(2)} × 12)
+                        </td>
+                        <td style={tdStyle}>
+                          = <b>{isFinite(roiYears) ? roiYears.toFixed(2) : "-"} Years</b>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            );
+          })()}
           </>
         ) : (
           <>
@@ -1166,7 +1276,12 @@ function App() {
 }
 
 const styles = {
-  container: { width: 340, margin: "50px auto", textAlign: "center" },
+  container: { 
+    width: 340, 
+    margin: "50px auto", 
+    textAlign: "center" 
+  },
+
   modeButton: {
     margin: "10px",
     padding: "10px 25px",
@@ -1177,6 +1292,7 @@ const styles = {
     color: "white",
     border: "none",
   },
+
   helpButton: {
     margin: "10px 0",
     padding: "8px 15px",
@@ -1187,6 +1303,7 @@ const styles = {
     color: "white",
     border: "none",
   },
+
   backButton: {
     marginTop: 15,
     marginLeft: 10,
@@ -1198,6 +1315,7 @@ const styles = {
     border: "none",
     borderRadius: 5,
   },
+
   card: {
     border: "1px solid #ddd",
     borderRadius: 10,
@@ -1206,6 +1324,7 @@ const styles = {
     textAlign: "left",
     background: "#fafafa",
   },
+
   input: {
     padding: "8px",
     fontSize: 16,
@@ -1215,6 +1334,7 @@ const styles = {
     border: "1px solid #ccc",
     textAlign: "center",
   },
+
   guideline: {
     background: "#f9f9f9",
     border: "1px solid #ddd",
@@ -1224,6 +1344,7 @@ const styles = {
     fontSize: "14px",
     textAlign: "left",
   },
+
   centerCard: {
     marginTop: "15px",
     padding: "15px",
@@ -1233,8 +1354,40 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    textAlign: "center"
-  }
+    textAlign: "center",
+  },
+
+  // 🆕 Added clean card layout styles for the calculation summary
+  sectionCard: {
+    background: "#fff",
+    borderRadius: "10px",
+    padding: "12px 16px",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+    marginBottom: "12px",
+  },
+
+  sectionHeader: {
+    marginBottom: "10px",
+    color: "#1565c0",
+    borderBottom: "1px solid #e3f2fd",
+    paddingBottom: "4px",
+    fontWeight: "600",
+  },
+
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    fontSize: "0.95rem",
+  },
+
+  label: {
+    fontWeight: 500,
+  },
+
+  value: {
+    fontWeight: 600,
+    color: "#1b5e20",
+  },
 };
 
 export default App;
