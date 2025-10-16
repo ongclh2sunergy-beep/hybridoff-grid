@@ -11,18 +11,11 @@ function App() {
   const [confirmed, setConfirmed] = useState(false);
 
   // step 2: hybrid
-  const [rangeMin, setRangeMin] = useState("");
-  const [rangeMax, setRangeMax] = useState("");
-  const [average, setAverage] = useState("");
+  const defaultHours = 8;
   const [phase, setPhase] = useState("");
   const [operatingM, setOperatingM] = useState("");
   const [kva, setKva] = useState("");
-  const [operatingHours, setOperatingHours] = useState(8);
-  useEffect(() => {
-    if (rangeMin && rangeMax) {
-      setAverage(((Number(rangeMin) + Number(rangeMax)) / 2).toFixed(1));
-    }
-  }, [rangeMin, rangeMax]);
+  const [operatingHours, setOperatingHours] = useState(defaultHours);
   const [showPresets, setShowPresets] = useState(false);
   const [gensetLiters, setGensetLiters] = useState("");
   const [showEstimateMsg, setShowEstimateMsg] = useState(false);
@@ -191,9 +184,6 @@ function App() {
                 setMode("");
                 setPhase("");
                 setOperatingM("");
-                setRangeMin("");
-                setRangeMax("");
-                setAverage("");
                 setKva("");
                 setCalcDetails(null);
                 setValue("");
@@ -306,24 +296,20 @@ function App() {
                           Imax = (1000 * estimatedKVA) / 230;
                         }
 
-                        const Imin = Imax * 0.3; // assume min 30% load
-                        const Iavg = (Imax + Imin) / 2;
+                        const I50 = Imax * 0.5; // assume min 50% load
 
                         // Update states
-                        setOperatingM(Math.round(Iavg));
-                        setRangeMin(Math.round(Imin));
-                        setRangeMax(Math.round(Imax));
-                        setAverage(Math.round(Iavg));
+                        setOperatingM(Math.round(I50));
                         setKva(Math.round(estimatedKVA)); // convert to kVA
                       
                       // Save calculation breakdown
                       setCalcDetails({
-                        kWh: kWh,
-                        estimatedKW: Math.round(estimatedKW),
-                        estimatedKVA: Math.round(estimatedKVA),
-                        Imax: Math.round(Imax),
-                        Imin: Math.round(Imin),
-                        Iavg: Math.round(Iavg),
+                        kWh: kWh.toFixed(2),
+                        estimatedKW: estimatedKW.toFixed(2),
+                        estimatedKVA: estimatedKVA.toFixed(2),
+                        Imax: Imax.toFixed(2),
+                        I50: I50.toFixed(2),
+                        defaultHours,
                       });
 
                       // Show confirmation text
@@ -362,38 +348,42 @@ function App() {
                       </summary>
                       <div style={{ marginTop: "10px", paddingLeft: "15px", color: "#333" }}>
                         <p>
-                          🔹 Fuel → Energy: <br />
-                          Formula: <code>Liters ÷ 0.25</code> <br />
+                          🔹 <b>Fuel → Energy:</b><br />
+                          Formula: <code>Liters ÷ 0.25</code><br />
                           Result: <b>{gensetLiters} ÷ 0.25 = {calcDetails.kWh} kWh</b>
                         </p>
+
                         <p>
-                          🔹 Energy → Power (kW): <br />
-                          Formula: <code>kWh ÷ Operating Hours</code> <br />
-                          Result: <b>{calcDetails.kWh} ÷ {operatingHours} = {calcDetails.estimatedKW} kW</b>
+                          🔹 <b>Energy → Power (kW):</b><br />
+                          Formula: <code>kWh ÷ Operating Hours (Assume 8h)</code><br />
+                          Result: <b>{calcDetails.kWh} ÷ {calcDetails.defaultHours} = {calcDetails.estimatedKW} kW</b>
                         </p>
+
                         <p>
-                          🔹 Power → Apparent Power (kVA): <br />
-                          Formula: <code>kW ÷ PF (0.85)</code> <br />
+                          🔹 <b>Power → Apparent Power (kVA):</b><br />
+                          Formula: <code>kW ÷ PF (0.85)</code><br />
                           Result: <b>{calcDetails.estimatedKW} ÷ 0.85 = {calcDetails.estimatedKVA} kVA</b>
                         </p>
+
                         <p>
-                          🔹 Max Current (Imax): <br />
-                          Formula: 
-                          {phase === "three" 
-                            ? <code>(1000 × kVA) ÷ (√3 × 400)</code> 
-                            : <code>(1000 × kVA) ÷ 230</code>
-                          } <br />
+                          🔹 <b>Max Current (Imax):</b><br />
+                          Formula:{" "}
+                          {phase === "three" ? (
+                            <code>(1000 * kVA) / (√3 * 400)</code>
+                          ) : (
+                            <code>(1000 * kVA) / 230</code>
+                          )}<br />
                           Result: <b>{calcDetails.Imax} A</b>
                         </p>
+
                         <p>
-                          🔹 Min Current (Imin): <br />
-                          Formula: <code>Imax × 0.3</code> <br />
-                          Result: <b>{calcDetails.Imin} A</b>
+                          🔹 <b>Operating Amps (50% Load):</b><br />
+                          Formula: <code>Imax × 0.5</code><br />
+                          Result: <b>{calcDetails.Imax} × 0.5 = {calcDetails.I50} A</b>
                         </p>
-                        <p>
-                          🔹 Avg Current (Iavg): <br />
-                          Formula: <code>(Imax + Imin) ÷ 2</code> <br />
-                          Result: <b>{calcDetails.Iavg} A</b>
+
+                        <p style={{ color: "#2e7d32", fontWeight: "bold" }}>
+                          ✅ System assumes 50% load condition for real-world operating range.
                         </p>
                       </div>
                     </details>
@@ -429,8 +419,6 @@ function App() {
                           style={{
                             display: "grid",
                             justifyContent: "center",
-                            // gap: "20px",
-                            // marginBottom: "15px",
                             flexWrap: "wrap",
                           }}
                         >
@@ -439,14 +427,11 @@ function App() {
                             onClick={() => {
                               setKva(25);
                               setOperatingM(18);
-                              setRangeMin(15);
-                              setRangeMax(22);
-                              setAverage(18.5);
                             }}
                           >
                             Small Usage <br />
-                            <span style={{ fontSize: "12px"}}>(Shops / Small Offices)</span>
-
+                            <span style={{ fontSize: "12px"}}>(Shops / Small Offices)
+                            </span>
                           </button>
 
                           <button
@@ -454,9 +439,6 @@ function App() {
                             onClick={() => {
                               setKva(80);
                               setOperatingM(60);
-                              setRangeMin(55);
-                              setRangeMax(70);
-                              setAverage(60);
                             }}
                           >
                             Medium Usage <br />
@@ -468,9 +450,6 @@ function App() {
                             onClick={() => {
                               setKva(200);
                               setOperatingM(150);
-                              setRangeMin(120);
-                              setRangeMax(180);
-                              setAverage(150);
                             }}
                           >
                             High Usage <br />
@@ -498,57 +477,6 @@ function App() {
                     />
                   </div>
 
-                  {/* Range Min */}
-                  <div style={{ display: "block", marginTop: "15px", textAlign: "center" }}>
-                    <label>
-                      Range Min (Amps):
-                    </label>
-                    <input
-                      type="number"
-                      value={rangeMin}
-                      onChange={(e) => setRangeMin(e.target.value)}
-                      style={{
-                          ...styles.input, 
-                          marginTop:"8px",
-                          textAlign:"center",}}
-                      placeholder="Enter minimum Amps"
-                    />
-                  </div>
-
-                  {/* Range Max */}
-                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
-                    <label>
-                      Range Max (Amps):
-                    </label>
-                    <input
-                      type="number"
-                      value={rangeMax}
-                      onChange={(e) => setRangeMax(e.target.value)}
-                      style={{
-                            ...styles.input, 
-                            marginTop:"8px",
-                            textAlign:"center",}}
-                      placeholder="Enter maximum Amps"
-                    />
-                  </div>
-
-                  {/* Average */}
-                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
-                    <label>
-                      Average (Amps):
-                    </label>
-                    <input
-                      type="number"
-                      value={average}
-                      readOnly
-                      style={{
-                        ...styles.input,
-                        backgroundColor: "#f5f5f5",
-                        cursor: "not-allowed",
-                      }}
-                    />
-                  </div>
-
                   {/* kVA */}
                   <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
                     <label>
@@ -564,34 +492,15 @@ function App() {
                             textAlign:"center",}}
                       placeholder="Enter genset kVA"
                     />
-                  </div>
-
-                  {/* Operating Hours Slider */}
-                  <div style={{ display: "block", marginTop: "15px", textAlign: "center" }}>
-                    <label>
-                      Operating Hours per Day: <b>{operatingHours}h</b>
-                      <input
-                        type="range"
-                        min="1"
-                        max="24"
-                        value={operatingHours}
-                        onChange={(e) => setOperatingHours(Number(e.target.value))}
-                        style={{ width: "80%", marginTop: "10px" }}
-                      />
-                    </label>
-                  </div>
+                  </div>  
 
                   {/* Clear Button */}
                   <div style={{ textAlign: "center", marginTop: "20px" }}>
                     <button
                       onClick={() => {
                         setOperatingM("");
-                        setRangeMin("");
-                        setRangeMax("");
-                        setAverage("");
                         setKva("");
                         setCalcDetails(null);
-                        setOperatingHours(8);
                       }}
                       style={{
                         padding: "10px 20px",
@@ -694,18 +603,6 @@ function App() {
                     setErrorMessage("⚠️ Please enter operating Amps.");
                     return;
                   }
-                  if (!rangeMin) {
-                    setErrorMessage("⚠️ Please enter the minimum Amps.");
-                    return;
-                  }
-                  if (!rangeMax) {
-                    setErrorMessage("⚠️ Please enter the maximum Amps.");
-                    return;
-                  }
-                  if (!average) {
-                    setErrorMessage("⚠️ Please enter the average Amps.");
-                    return;
-                  }
                   if (!kva) {
                     setErrorMessage("⚠️ Please enter the genset rating (kVA).");
                     return;
@@ -717,18 +614,6 @@ function App() {
                   }
                   if (Number(kva) <= 0) {
                     setErrorMessage("⚠️ Genset rating (kVA) must be greater than 0.");
-                    return;
-                  }
-                  if (Number(rangeMin) < 0 || Number(rangeMax) < 0 || Number(average) < 0) {
-                    setErrorMessage("⚠️ Load values cannot be negative.");
-                    return;
-                  }
-                  if (Number(rangeMin) > Number(rangeMax)) {
-                    setErrorMessage("⚠️ Minimum Amps cannot be greater than Maximum Amps.");
-                    return;
-                  }
-                  if (Number(average) < Number(rangeMin) || Number(average) > Number(rangeMax)) {
-                    setErrorMessage("⚠️ Average Amps must be between Min and Max.");
                     return;
                   }
                 } else {
@@ -1128,35 +1013,48 @@ function App() {
             onClick={() => {
               const doc = new jsPDF();
 
-              // constants
+              // --- Constants ---
               const peakSunHour = 3.42;
               const panelWatt = 640;
+              const pf = 0.85;
 
               let totalPanels = 0;
               let required_kWh = 0;
               let genset_kWh = 0;
+              let effectiveAmp = 0;
 
-              if (mode === "Hybrid" || mode === "Standby") {
-                genset_kWh = Number(average) * Number(operatingHours); // average load × hours
-                required_kWh = genset_kWh * (dieselSaving / 100);
-
-                totalPanels = Math.ceil((required_kWh * 1.3) / ((panelWatt / 1000) * peakSunHour));
-
+              // --- If genset fuel capacity is provided, assume 50% load ---
+              if (gensetLiters) {
+                effectiveAmp = operatingM * 0.5;
               } else {
-                required_kWh = Number(value);
-                required_kWh = Number(value || 0); // off-grid daily usage
-                totalPanels = Math.ceil((required_kWh * 1.3) / ((panelWatt / 1000) * peakSunHour));
-              };
+                effectiveAmp = operatingM;
+              }
+
+              // --- Energy Calculations ---
+              if (mode === "Hybrid" || mode === "Standby") {
+                genset_kWh = effectiveAmp * operatingHours; // amps × hours (rough estimation)
+                required_kWh = genset_kWh * (dieselSaving / 100); // solar offset target
+                totalPanels = Math.ceil(
+                  (required_kWh * 1.3) / ((panelWatt / 1000) * peakSunHour)
+                );
+              } else {
+                required_kWh = Number(value || 0); // off-grid user input
+                totalPanels = Math.ceil(
+                  (required_kWh * 1.3) / ((panelWatt / 1000) * peakSunHour)
+                );
+              }
 
               const requiredBatteryStorageKwh =
-                mode === "Hybrid" || mode === "Standby" ? required_kWh : required_kWh * 3;
+                mode === "Hybrid" || mode === "Standby"
+                  ? required_kWh
+                  : required_kWh * 3;
 
-              // Title
+              // --- Title ---
               doc.setFontSize(20);
               doc.setTextColor(40, 90, 140);
               doc.text("System Sizing Report", 14, 20);
 
-              // Section: Input Parameters
+              // --- Section: Input Parameters ---
               doc.setFillColor(230, 240, 255);
               doc.rect(10, 30, 190, 10, "F");
               doc.setTextColor(0);
@@ -1165,15 +1063,20 @@ function App() {
 
               doc.setFontSize(12);
               if (mode === "Hybrid" || mode === "Standby") {
-                const kvaToKw = (Number(kva) * 85).toFixed(1);
-                doc.setFont("helvetica", "normal")
-                doc.text(`Mode: Hybrid`, 14, 47);
-                doc.text(`Genset Rating: ${kva} kVA (= ${kvaToKw} kW at PF 0.85)`, 14, 55);
-                doc.text(`Min Load: ${rangeMin} kW`, 14, 63);
-                doc.text(`Avg Load: ${average} kW`, 14, 71);
-                doc.text(`Max Load: ${rangeMax} kW`, 14, 79);
-                doc.text(`Operating Hours: ${operatingHours} h/day`, 14, 87);
-                doc.text(`Diesel Saving Target: ${dieselSaving}%`, 14, 95);
+                const kvaToKw = (Number(kva) * pf).toFixed(1);
+                doc.setFont("helvetica", "normal");
+                doc.text(`Mode: ${mode}`, 14, 47);
+                doc.text(
+                  `Genset Rating: ${kva} kVA (= ${kvaToKw} kW at PF ${pf})`,
+                  14,
+                  55
+                );
+                doc.text(`Operating Hours: ${operatingHours} h/day`, 14, 63);
+                doc.text(`Diesel Saving Target: ${dieselSaving}%`, 14, 71);
+
+                if (gensetLiters) {
+                  doc.text(`(Auto Applied 50% Load based on Genset Capacity)`, 14, 79);
+                }
               } else {
                 doc.text(`Mode: Off-Grid`, 14, 47);
                 doc.text(`Daily Usage: ${value} kWh/day`, 14, 55);
@@ -1190,47 +1093,87 @@ function App() {
                 );
               }
 
-              // Section: System Constants
+              // --- Section: System Constants ---
               doc.setFillColor(230, 240, 255);
-              doc.rect(10, 105, 190, 10, "F");
+              doc.rect(10, 90, 190, 10, "F");
               doc.setFontSize(14);
-              doc.text("System Constants", 14, 112);
+              doc.text("System Constants", 14, 97);
 
               doc.setFontSize(12);
-              doc.text(`Power Factor: 0.85`, 14, 122);
-              doc.text(`Peak Sun Hours: ${peakSunHour} h/day`, 14, 130);
-              doc.text(`Solar Panel Size: ${panelWatt} W`, 14, 138);
+              doc.text(`Power Factor: ${pf}`, 14, 107);
+              doc.text(`Peak Sun Hours: ${peakSunHour} h/day`, 14, 115);
+              doc.text(`Solar Panel Size: ${panelWatt} W`, 14, 123);
 
-              // Section: Full Calculations
+              // --- Section: Full Calculations ---
               doc.setFillColor(230, 240, 255);
-              doc.rect(10, 156, 190, 10, "F");
+              doc.rect(10, 135, 190, 10, "F");
               doc.setFontSize(14);
-              doc.text("Full Calculations", 14, 163);
+              doc.text("Full Calculations", 14, 142);
 
               doc.setFontSize(11);
               if (mode === "Hybrid" || mode === "Standby") {
-                doc.text(`1) Daily Genset Energy = Avg Load × Hours = ${average} × ${operatingHours} = ${genset_kWh.toFixed(1)} kWh/day`, 14, 173);
-                doc.text(`2) Required Solar = ${genset_kWh.toFixed(1)} × (${dieselSaving}% ÷ 100) = ${required_kWh.toFixed(1)} kWh/day`, 14, 181);
-                doc.text(`3) Per Panel Output = (${panelWatt} ÷ 1000) × ${peakSunHour} = ${(panelWatt/1000*peakSunHour).toFixed(2)} kWh/day`, 14, 189);
-                doc.text(`4) Total Panels (with 30% storage) = ${required_kWh.toFixed(1)} × 1.3 ÷ ${((panelWatt / 1000) * peakSunHour).toFixed(2)} = ${totalPanels}`, 14, 197);
-                doc.text(`5) Required Battery Storage = ${requiredBatteryStorageKwh.toFixed(1)} kWh/day`, 14, 205);
+                doc.text(
+                  `1) Estimated Genset Output = ${effectiveAmp.toFixed(1)} A × ${operatingHours} h = ${genset_kWh.toFixed(1)} kWh/day`,
+                  14,
+                  152
+                );
+                doc.text(
+                  `2) Required Solar = ${genset_kWh.toFixed(1)} × (${dieselSaving}% ÷ 100) = ${required_kWh.toFixed(1)} kWh/day`,
+                  14,
+                  160
+                );
+                doc.text(
+                  `3) Per Panel Output = (${panelWatt} ÷ 1000) × ${peakSunHour} = ${(panelWatt / 1000 * peakSunHour).toFixed(2)} kWh/day`,
+                  14,
+                  168
+                );
+                doc.text(
+                  `4) Total Panels (with 30% reserve) = ${required_kWh.toFixed(1)} × 1.3 ÷ ${((panelWatt / 1000) * peakSunHour).toFixed(2)} = ${totalPanels}`,
+                  14,
+                  176
+                );
+                doc.text(
+                  `5) Required Battery Storage = ${requiredBatteryStorageKwh.toFixed(1)} kWh/day`,
+                  14,
+                  184
+                );
+
+                if (gensetLiters) {
+                  doc.text(`(Applied 50% load for initial genset estimation)`, 14, 192);
+                }
               } else {
-                doc.text(`1) Required Energy = ${required_kWh} kWh/day`, 14, 173);
-                doc.text(`2) Per Panel Output = (${panelWatt} ÷ 1000) × ${peakSunHour} = ${(panelWatt/1000*peakSunHour).toFixed(2)} kWh/day`, 14, 181);
-                doc.text(`3) Total Panels (with 30% storage) = ${required_kWh} × 1.3 ÷ ${((panelWatt / 1000) *peakSunHour).toFixed(2)} = ${totalPanels}`, 14, 189);
-                doc.text(`4) Required Battery Storage = ${requiredBatteryStorageKwh.toFixed(1)} kWh/day`, 14, 197);
+                doc.text(`1) Required Energy = ${required_kWh} kWh/day`, 14, 152);
+                doc.text(
+                  `2) Per Panel Output = (${panelWatt} ÷ 1000) × ${peakSunHour} = ${(panelWatt / 1000 * peakSunHour).toFixed(2)} kWh/day`,
+                  14,
+                  160
+                );
+                doc.text(
+                  `3) Total Panels (with 30% reserve) = ${required_kWh} × 1.3 ÷ ${((panelWatt / 1000) * peakSunHour).toFixed(2)} = ${totalPanels}`,
+                  14,
+                  168
+                );
+                doc.text(
+                  `4) Required Battery Storage = ${requiredBatteryStorageKwh.toFixed(1)} kWh/day`,
+                  14,
+                  176
+                );
               }
 
-              // Section: Final System Requirement
+              // --- Section: Final System Requirement ---
               doc.setFillColor(230, 240, 255);
-              doc.rect(10, 215, 190, 10, "F");
+              doc.rect(10, 202, 190, 10, "F");
               doc.setFontSize(14);
-              doc.text("System Requirement", 14, 222);
+              doc.text("System Requirement", 14, 209);
 
               doc.setFontSize(12);
               doc.setTextColor(20, 100, 20);
-              doc.text(`Solar Panels Needed: ${totalPanels}`, 14, 232);
-              doc.text(`Battery Storage Required: ${requiredBatteryStorageKwh.toFixed(1)} kWh/day`, 14, 240);
+              doc.text(`Solar Panels Needed: ${totalPanels}`, 14, 219);
+              doc.text(
+                `Battery Storage Required: ${requiredBatteryStorageKwh.toFixed(1)} kWh/day`,
+                14,
+                227
+              );
 
               doc.save("system-sizing-report.pdf");
             }}
@@ -1254,9 +1197,6 @@ function App() {
               setPhase("");
               setValue("");
               setOperatingM("");
-              setRangeMin("");
-              setRangeMax("");
-              setAverage("");
               setKva("");
               setCalcDetails(null);
               setPhase("");
