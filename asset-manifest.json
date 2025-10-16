@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/hybridoff-grid/static/css/main.e6c13ad2.css",
-    "main.js": "/hybridoff-grid/static/js/main.8cabf67d.js",
+    "main.js": "/hybridoff-grid/static/js/main.abfc76df.js",
     "static/js/239.cc8ef32b.chunk.js": "/hybridoff-grid/static/js/239.cc8ef32b.chunk.js",
     "static/js/977.c0fddb20.chunk.js": "/hybridoff-grid/static/js/977.c0fddb20.chunk.js",
     "static/js/455.ed26619f.chunk.js": "/hybridoff-grid/static/js/455.ed26619f.chunk.js",
     "static/js/453.b71dd86b.chunk.js": "/hybridoff-grid/static/js/453.b71dd86b.chunk.js",
     "index.html": "/hybridoff-grid/index.html",
     "main.e6c13ad2.css.map": "/hybridoff-grid/static/css/main.e6c13ad2.css.map",
-    "main.8cabf67d.js.map": "/hybridoff-grid/static/js/main.8cabf67d.js.map",
+    "main.abfc76df.js.map": "/hybridoff-grid/static/js/main.abfc76df.js.map",
     "239.cc8ef32b.chunk.js.map": "/hybridoff-grid/static/js/239.cc8ef32b.chunk.js.map",
     "977.c0fddb20.chunk.js.map": "/hybridoff-grid/static/js/977.c0fddb20.chunk.js.map",
     "455.ed26619f.chunk.js.map": "/hybridoff-grid/static/js/455.ed26619f.chunk.js.map",
@@ -16,6 +16,6 @@
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.8cabf67d.js"
+    "static/js/main.abfc76df.js"
   ]
 }
