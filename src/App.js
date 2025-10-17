@@ -213,9 +213,9 @@ function App() {
           <>
             <div style={styles.card}>
               <p>Please select your genset phase first:</p>
-              
+
               {/* Phase Selection */}
-              <div style={{ marginTop:"10px"}}>
+              <div style={{ marginTop: "10px" }}>
                 <label>
                   <input
                     type="radio"
@@ -243,8 +243,10 @@ function App() {
             {/* Show genset details only if phase is selected */}
             {phase && (
               <>
-              <br />
-                <p style={{ textAlign:"center", marginTop: "15px" }}><strong>Please enter your genset details</strong>:</p>
+                <br />
+                <p style={{ textAlign: "center", marginTop: "15px" }}>
+                  <strong>Please enter your genset details</strong>:
+                </p>
 
                 <div style={styles.card}>
                   {/* Quick Presets Dropdown */}
@@ -265,7 +267,13 @@ function App() {
 
                     {showPresets && (
                       <div style={{ marginTop: "15px" }}>
-                        <p style={{ fontSize: "14px", color: "#555", marginBottom: "15px" }}>
+                        <p
+                          style={{
+                            fontSize: "14px",
+                            color: "#555",
+                            marginBottom: "15px",
+                          }}
+                        >
                           These buttons let you quickly fill in common load scenarios.
                         </p>
 
@@ -277,37 +285,54 @@ function App() {
                           }}
                         >
                           <button
-                            style={{ ...styles.modeButton, backgroundColor: "#4caf50", minwidth:"150px", }}
+                            style={{
+                              ...styles.modeButton,
+                              backgroundColor: "#4caf50",
+                              minWidth: "150px",
+                            }}
                             onClick={() => {
                               setKva(25);
                               setOperatingM(18);
                             }}
                           >
                             Small Usage <br />
-                            <span style={{ fontSize: "12px"}}>(Shops / Small Offices)
+                            <span style={{ fontSize: "12px" }}>
+                              (Shops / Small Offices)
                             </span>
                           </button>
 
                           <button
-                            style={{ ...styles.modeButton, backgroundColor: "#2196f3", minWidth:"150px", }}
+                            style={{
+                              ...styles.modeButton,
+                              backgroundColor: "#2196f3",
+                              minWidth: "150px",
+                            }}
                             onClick={() => {
                               setKva(80);
                               setOperatingM(60);
                             }}
                           >
                             Medium Usage <br />
-                            <span style={{ fontSize: "12px"}}>(Restaurant / School / Factory Section)</span>
+                            <span style={{ fontSize: "12px" }}>
+                              (Restaurant / School / Factory Section)
+                            </span>
                           </button>
 
                           <button
-                            style={{ ...styles.modeButton, backgroundColor: "#f44336", minWidth: "150px", }}
+                            style={{
+                              ...styles.modeButton,
+                              backgroundColor: "#f44336",
+                              minWidth: "150px",
+                            }}
                             onClick={() => {
                               setKva(200);
                               setOperatingM(150);
                             }}
                           >
                             High Usage <br />
-                            <span style={{ fontSize: "12px" }}>(Large Factory / Hotel / Hospital)</span>
+                            <span style={{ fontSize: "12px" }}>
+                              (Large Factory / Hotel / Hospital)
+                            </span>
                           </button>
                         </div>
                       </div>
@@ -315,41 +340,43 @@ function App() {
                   </div>
 
                   {/* kVA */}
-                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
-                    <label>
-                      Genset Rating (kVA):
-                    </label>
+                  <div
+                    style={{ display: "block", marginTop: "15px", textAlign: "center" }}
+                  >
+                    <label>Genset Rating (kVA):</label>
                     <input
                       type="number"
                       value={kva}
                       onChange={(e) => setKva(e.target.value)}
                       style={{
-                            ...styles.input, 
-                            marginTop:"8px",
-                            textAlign:"center",}}
+                        ...styles.input,
+                        marginTop: "8px",
+                        textAlign: "center",
+                      }}
                       placeholder="Enter genset kVA"
                     />
                   </div>
 
                   {/* Operating Amps */}
-                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
-                    <label>
-                      Operating Amps:
-                    </label>
+                  <div
+                    style={{ display: "block", marginTop: "15px", textAlign: "center" }}
+                  >
+                    <label>Operating Amps:</label>
                     <input
                       type="number"
                       value={operatingM}
                       onChange={(e) => setOperatingM(e.target.value)}
                       style={{
-                          ...styles.input, 
-                          marginTop:"8px",
-                          textAlign:"center",}}
+                        ...styles.input,
+                        marginTop: "8px",
+                        textAlign: "center",
+                      }}
                       placeholder="Enter operating Amps"
                     />
-                  </div>  
+                  </div>
 
                   {/* Clear Button */}
-                  <div style={{ textAlign: "center", marginTop: "20px" }}>
+                  <div style={{ textAlign: "center", marginTop: "10px" }}>
                     <button
                       onClick={() => {
                         setOperatingM("");
@@ -371,205 +398,15 @@ function App() {
                   </div>
                 </div>
 
-                <button
-                  style={styles.modeButton}
-                  onClick={() => {
-                    if (mode === "Hybrid" || mode === "Standby") {
-                      if (!phase) {
-                        setErrorMessage("⚠️ Please select a genset phase.");
-                        return;
-                      }
-                      if (!operatingM) {
-                        setErrorMessage("⚠️ Please enter operating Amps.");
-                        return;
-                      }
-                      if (!kva) {
-                        setErrorMessage("⚠️ Please enter the genset rating (kVA).");
-                        return;
-                      }
-                      // ✅ Guardrails
-                      if (Number(operatingM) <= 0) {
-                        setErrorMessage("⚠️ Operating Amps cannot be negative.");
-                        return;
-                      }
-                      if (Number(kva) <= 0) {
-                        setErrorMessage("⚠️ Genset rating (kVA) must be greater than 0.");
-                        return;
-                      }
-                    } else {
-                      if (!value) {
-                        setErrorMessage("⚠️ Please enter your electricity usage (kWh).");
-                        return;
-                      }
-                    }
-
-                    // If everything is filled, clear error and confirm
-                    setErrorMessage("");
-                    setConfirmed(true);
-
-                    // ✅ Delay scroll by 1s (after Step 3 renders)
-                    setTimeout(() => {
-                      window.scrollTo({
-                        top: 0,
-                        behavior: "smooth",
-                      });
-                    }, 500);
-                  }}
-                >
-                  Confirm
-                </button>
-
-                <h3>OR</h3>
-
-                <div style={styles.card}>
-                  {/* NEW: Genset Liters Input */}
-                  <div style={{ textAlign:"center", marginTop: "15px" }}>
-                    <label>
-                      Genset Fuel Capacity (Liters):
-                    </label>
-                    <input
-                      type="number"
-                      value={gensetLiters}
-                      onChange={(e) => setGensetLiters(e.target.value)}
-                      style={{
-                        ...styles.input, 
-                        marginTop:"8px",
-                        textAlign:"center",}}
-                      placeholder="Enter genset liters"
-                    />
+                {/* Result Section */}
+                {calcDetails && (
+                  <div style={{ ...styles.card, marginTop: "20px" }}>
+                    <p><b>🔹 Genset Rating:</b> {calcDetails.kva} kVA</p>
+                    <p><b>🔹 Operating Amps:</b> {calcDetails.operatingM} A</p>
+                    <p><b>🔹 Estimated Energy:</b> {calcDetails.requiredEnergy.toFixed(1)} kWh/day</p>
+                    <p><b>🔹 Recommended Inverter Capacity:</b> {calcDetails.inverterCapacity} kW</p>
                   </div>
-
-                  {/* Operating Hours Slider */}
-                  <div style={{ marginTop: "15px" }}>
-                    <label>
-                      Operating Hours: <b>{operatingHours}h</b>
-                      <input
-                        type="range"
-                        min="1"
-                        max="24"
-                        value={operatingHours}
-                        onChange={(e) => setOperatingHours(Number(e.target.value))}
-                        style={{ width: "100%" }}
-                      />
-                    </label>
-                  </div>
-                  
-                  {/* Auto Calculate Button */}
-                  <div style={{ textAlign: "center", marginTop: "5px" }}>
-                    <button
-                      onClick={() => {
-                        if (!gensetLiters) return;
-
-                        // --- Assumptions ---
-                        // 0.25 L/kWh diesel consumption
-                        // 8 hours runtime
-                        // PF = 0.85
-                        const kWh = gensetLiters / 0.25; 
-                        const estimatedKW = kWh / operatingHours; // assume 8h runtime
-                        const estimatedKVA = estimatedKW / 0.85;
-
-                        let Imax = 0;
-                        if (phase === "three") {
-                          // Three-phase @ 400V
-                          Imax = (1000 * estimatedKVA) / (Math.sqrt(3) * 400);
-                        } else {
-                          // Single-phase @ 230V
-                          Imax = (1000 * estimatedKVA) / 230;
-                        }
-
-                        const I50 = Imax * 0.5; // assume min 50% load
-
-                        // Update states
-                        setOperatingM(Math.round(I50));
-                        setKva(Math.round(estimatedKVA)); // convert to kVA
-                      
-                      // Save calculation breakdown
-                      setCalcDetails({
-                        kWh: kWh.toFixed(2),
-                        estimatedKW: estimatedKW.toFixed(2),
-                        estimatedKVA: estimatedKVA.toFixed(2),
-                        Imax: Imax.toFixed(2),
-                        I50: I50.toFixed(2),
-                        defaultHours,
-                      });
-
-                      // Show confirmation text
-                      setShowEstimateMsg(true);
-
-                      // Hide it after 3 seconds
-                      setTimeout(() => setShowEstimateMsg(false), 2500);
-                      }}
-                      style={{
-                        padding: "10px 20px",
-                        borderRadius: "8px",
-                        border: "1px solid #ccc",
-                        cursor: "pointer",
-                        backgroundColor: "#e8f5e9",
-                        color: "#2e7d32",
-                        fontWeight: "bold",
-                        marginTop: "10px",
-                      }}
-                    >
-                      🔍 Estimate Amps from Liters
-                    </button>
-
-                    {/* Confirmation Text */}
-                    {showEstimateMsg && (
-                      <p style={{ marginTop: "10px", color: "#2e7d32", fontWeight: "bold" }}>
-                        ✅ Estimated values have been filled in!
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Dropdown for Calculation Details */}
-                  {calcDetails && (
-                    <details style={{ marginTop: "15px", textAlign: "left" }}>
-                      <summary style={{ cursor: "pointer", fontWeight: "bold", color: "#007BFF" }}>
-                        📊 Show Calculation Details
-                      </summary>
-                      <div style={{ marginTop: "10px", paddingLeft: "15px", color: "#333" }}>
-                        <p>
-                          🔹 <b>Fuel → Energy:</b><br />
-                          Formula: <code>Liters ÷ 0.25</code><br />
-                          Result: <b>{gensetLiters} ÷ 0.25 = {calcDetails.kWh} kWh</b>
-                        </p>
-
-                        <p>
-                          🔹 <b>Energy → Power (kW):</b><br />
-                          Formula: <code>kWh ÷ Operating Hours (Assume 8h)</code><br />
-                          Result: <b>{calcDetails.kWh} ÷ {calcDetails.defaultHours} = {calcDetails.estimatedKW} kW</b>
-                        </p>
-
-                        <p>
-                          🔹 <b>Power → Apparent Power (kVA):</b><br />
-                          Formula: <code>kW ÷ PF (0.85)</code><br />
-                          Result: <b>{calcDetails.estimatedKW} ÷ 0.85 = {calcDetails.estimatedKVA} kVA</b>
-                        </p>
-
-                        <p>
-                          🔹 <b>Max Current (Imax):</b><br />
-                          Formula:{" "}
-                          {phase === "three" ? (
-                            <code>(1000 * kVA) / (√3 * 400)</code>
-                          ) : (
-                            <code>(1000 * kVA) / 230</code>
-                          )}<br />
-                          Result: <b>{calcDetails.Imax} A</b>
-                        </p>
-
-                        <p>
-                          🔹 <b>Operating Amps (50% Load):</b><br />
-                          Formula: <code>Imax × 0.5</code><br />
-                          Result: <b>{calcDetails.Imax} × 0.5 = {calcDetails.I50} A</b>
-                        </p>
-
-                        <p style={{ color: "#2e7d32", fontWeight: "bold" }}>
-                          ✅ System assumes 50% load condition for real-world operating range.
-                        </p>
-                      </div>
-                    </details>
-                  )}
-                </div>
+                )}
               </>
             )}
           </>
@@ -759,279 +596,11 @@ function App() {
 
             {/* Calculation */}
             {(() => {
-            // --- Constants ---
-            const pf = 0.85;
-            const sqrt3 = 1.732;
-            const singleV = 230;
-            const threeV = 400;
-            const solarCost = 1800;
-            const batteryCost = 660;
-            const inverterCost = 4000;
-            const installCost = 1000;
-            const dieselCost = 0.9;
-            const tax = 0.24;
-            const panelCapacity = 0.64;
-            const peakSunHour = 3.5;
-            const days = 30;
-
-            // --- Inputs ---
-            const selectedPhase = phase === "single" ? "Single Phase" : "Three Phase";
-            const operatingAmp = operatingM || 140;
-            const kFactor = selectedPhase === "Single Phase" ? 0.1955 : 0.5889;
-
-            // --- Calculations ---
-            const singlePhaseCalc = (singleV * pf) / 1000;
-            const threePhaseCalc = (threeV * pf * sqrt3) / 1000;
-            const required_kWh = operatingAmp * (dieselSaving / 100) * kFactor;
-
-            // 🔹 Round up solar normally, but battery to nearest 5
-            const solarNeeded = Math.ceil((required_kWh / panelCapacity)/0.8);
-            const batteryRaw = (required_kWh / 2) * 2;
-            const batteryNeeded = Math.ceil(batteryRaw / 5) * 5; // Ceiling to nearest 5
-
-            const solarRM = Math.round(((solarNeeded * panelCapacity) * solarCost) / 100) * 100;
-            const batteryRM = batteryNeeded * batteryCost;
-            const totalRM = solarRM + batteryRM + inverterCost + installCost;
-            const saving = (solarNeeded * panelCapacity) * peakSunHour * days * dieselCost;
-            const netCost = totalRM * (1 - tax);      // apply tax to total
-            const annualSaving = saving * 12;         // convert monthly saving -> annual
-            const roiYears = annualSaving > 0 ? netCost / annualSaving : NaN;
-
-            // --- Styles ---
-            const card = {
-              background: "#e6f0ff",
-              borderRadius: "12px",
-              padding: "20px",
-              marginTop: "20px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            };
-
-            const sectionCard = {
-              background: "#ffffff",
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              padding: "12px 16px",
-              marginBottom: "14px",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-            };
-
-            const sectionHeader = {
-              fontSize: "16px",
-              fontWeight: "bold",
-              color: "#1565c0",
-              marginBottom: "8px",
-              borderBottom: "2px solid #e3f2fd",
-              paddingBottom: "4px",
-            };
-
-            const table = {
-              width: "100%",
-              borderCollapse: "collapse",
-              fontSize: "14px",
-            };
-
-            const tdStyle = {
-              padding: "6px 4px",
-              borderBottom: "1px solid #eee",
-            };
-
-            const label = { color: "#003366" };
-            const value = { fontWeight: "bold", color: "#000" };
-
-            // --- JSX ---
-            return (
-              <div
-                style={{
-                  ...card,
-                  background: "#f9fbfd",
-                  padding: "18px",
-                  borderRadius: "14px",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "20px",
-                }}
-              >
-                {/* --- Header --- */}
-                <h3
-                  style={{
-                    margin: "0",
-                    color: "#1e88e5",
-                    borderBottom: "2px solid #e3f2fd",
-                    paddingBottom: "6px",
-                  }}
-                >
-                  📘 Calculation Summary ({selectedPhase})
-                </h3>
-
-                {/* --- Section 1: Phase Calculations --- */}
-                <div style={sectionCard}>
-                  <h4 style={sectionHeader}>🔹 Phase Conversion</h4>
-                  <table style={table}>
-                    <tbody>
-                      <tr>
-                        <td style={tdStyle}>Single Phase</td>
-                        <td style={tdStyle}>230 × 0.85 / 1000</td>
-                        <td style={tdStyle}>= {singlePhaseCalc.toFixed(4)} kW</td>
-                      </tr>
-                      <tr>
-                        <td style={tdStyle}>Three Phase</td>
-                        <td style={tdStyle}>400 × 0.85 × 1.732 / 1000</td>
-                        <td style={tdStyle}>= {threePhaseCalc.toFixed(4)} kW</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* --- Section 2: Energy Needs --- */}
-                <div style={sectionCard}>
-                  <h4 style={sectionHeader}>⚡ Energy Requirement</h4>
-                  <table style={table}>
-                    <tbody>
-                      <tr>
-                        <td style={tdStyle}>Required kWh</td>
-                        <td style={tdStyle}>
-                          {operatingAmp} × ({dieselSaving}% ÷ 100) × {kFactor}
-                        </td>
-                        <td style={tdStyle}>= {required_kWh.toFixed(3)} kWh</td>
-                      </tr>
-                      <tr>
-                        <td style={{
-                            ...tdStyle,
-                            borderTop: "1px solid #ccc",
-                            fontWeight: "bold",
-                          }}
-                        >
-                          Solar Panel Needed</td>
-                        <td style={tdStyle}>{required_kWh.toFixed(3)} ÷ 0.64 ÷ 0.8</td>
-                        <td style={tdStyle}>= <b>{solarNeeded} pcs</b></td>
-                      </tr>
-                      <tr>
-                        <td style={tdStyle}><b>Battery Needed</b></td>
-                        <td style={tdStyle}>
-                          ({required_kWh.toFixed(2)} ÷ 2) × 2
-                        </td>
-                        <td style={tdStyle}>= <b>{batteryNeeded} kWh</b></td>
-                      </tr>
-                      <tr>
-                        <td style={tdStyle}><b>Inverter Capacity</b></td>
-                        <td style={tdStyle}>
-                        </td>
-                        <td style={tdStyle}>= <b>{batteryNeeded} kWh</b></td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* --- Section 3: Cost Breakdown --- */}
-                <div style={sectionCard}>
-                  <h4 style={sectionHeader}>💰 Cost Breakdown</h4>
-                  <table style={table}>
-                    <tbody>
-                      <tr>
-                        <td style={tdStyle}>Solar Cost</td>
-                        <td style={tdStyle} colSpan={2}>
-                          RM {solarRM.toLocaleString()}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={tdStyle}>Battery Cost</td>
-                        <td style={tdStyle} colSpan={2}>
-                          RM {batteryRM.toLocaleString()}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style={tdStyle}>Inverter + Install</td>
-                        <td style={tdStyle} colSpan={2}>
-                          RM {(inverterCost + installCost).toLocaleString()}
-                        </td>
-                      </tr>
-                      <tr
-                        style={{
-                          ...tdStyle,
-                          borderTop: "1px solid #ccc",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        <td>Total System Cost</td>
-                        <td colSpan={2}>RM {totalRM.toLocaleString()}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* --- Section 4: Saving & ROI --- */}
-                <div style={sectionCard}>
-                  <h4 style={sectionHeader}>💡 Saving & ROI</h4>
-                  <table style={table}>
-                    <tbody>
-                      <tr>
-                        <td style={tdStyle}>Monthly Saving</td>
-                        <td style={tdStyle}>
-                          ({solarNeeded} × 0.64 × 3.5 × 30 × 0.9)
-                        </td>
-                        <td style={tdStyle}>= RM {saving.toLocaleString()}</td>
-                      </tr>
-                      <tr>
-                        <td style={tdStyle}>ROI</td>
-                        <td style={tdStyle}>
-                          (RM{totalRM.toLocaleString()} × {1 - tax}) ÷ (RM
-                          {saving.toFixed(2)} × 12)
-                        </td>
-                        <td style={tdStyle}>
-                          = <b>{isFinite(roiYears) ? roiYears.toFixed(2) : "-"} Years</b>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            );
-          })()}
-          </>
-        ) : (
-          <>
-            {/* --- Variable Declarations --- */}
-            {(() => {
-              // --- Styles ---
-              const card = {
-              background: "#e6f0ff",
-              borderRadius: "12px",
-              padding: "20px",
-              marginTop: "20px",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-            };
-
-            const sectionCard = {
-              background: "#ffffff",
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              padding: "12px 16px",
-              marginBottom: "14px",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-            };
-
-            const sectionHeader = {
-              fontSize: "16px",
-              fontWeight: "bold",
-              color: "#1565c0",
-              marginBottom: "8px",
-              borderBottom: "2px solid #e3f2fd",
-              paddingBottom: "4px",
-            };
-              const table = {
-                width: "100%",
-                borderCollapse: "collapse",
-                marginTop: "10px",
-              };
-
-              const tdStyle = {
-                border: "1px solid #ddd",
-                padding: "6px 10px",
-                textAlign: "left",
-                fontSize: "0.9rem",
-              };
-
+              // --- Constants ---
+              const pf = 0.85;
+              const sqrt3 = 1.732;
+              const singleV = 230;
+              const threeV = 400;
               const solarCost = 1800;
               const batteryCost = 660;
               const inverterCost = 4000;
@@ -1041,21 +610,186 @@ function App() {
               const panelCapacity = 0.64;
               const peakSunHour = 3.5;
               const days = 30;
-              
+
+              // --- Inputs ---
+              const selectedPhase = phase === "single" ? "Single Phase" : "Three Phase";
+              const operatingAmp = operatingM || 140;
+              const kFactor = selectedPhase === "Single Phase" ? 0.1955 : 0.5889;
+
               // --- Calculations ---
-              const required_kWh = value;
+              const singlePhaseCalc = (singleV * pf) / 1000;
+              const threePhaseCalc = (threeV * pf * sqrt3) / 1000;
+              const required_kWh = operatingAmp * (dieselSaving / 100) * kFactor;
 
               // 🔹 Round up solar normally, but battery to nearest 5
-              const solarNeeded = Math.ceil((required_kWh / panelCapacity)/0.8);
+              const solarNeeded = Math.ceil((required_kWh / panelCapacity) / 0.8);
               const batteryRaw = (required_kWh / 2) * 2;
               const batteryNeeded = Math.ceil(batteryRaw / 5) * 5; // Ceiling to nearest 5
 
-              const solarRM = Math.round(((solarNeeded * panelCapacity) * solarCost) / 100) * 100;
+              // 🔹 Inverter capacity selection (nearest to required energy)
+              const inverterOptions = [20, 30, 50];
+              const inverterCapacity = inverterOptions.reduce((prev, curr) =>
+                Math.abs(curr - required_kWh) < Math.abs(prev - required_kWh) ? curr : prev
+              );
+
+              const solarRM =
+                Math.round(((solarNeeded * panelCapacity) * solarCost) / 100) * 100;
+              const batteryRM = batteryNeeded * batteryCost;
+              const totalRM = solarRM + batteryRM + inverterCost + installCost;
+              const saving =
+                solarNeeded * panelCapacity * peakSunHour * days * dieselCost;
+              const netCost = totalRM * (1 - tax);
+              const annualSaving = saving * 12;
+              const roiYears = annualSaving > 0 ? netCost / annualSaving : NaN;
+
+              // --- Styles ---
+              const section = {
+                background: "#ffffff",
+                border: "1px solid #ddd",
+                borderRadius: "10px",
+                padding: "16px 20px",
+                marginBottom: "14px",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                textAlign: "left",
+              };
+              const title = {
+                fontSize: "16px",
+                fontWeight: "bold",
+                color: "#1565c0",
+                marginBottom: "10px",
+                borderBottom: "2px solid #e3f2fd",
+                paddingBottom: "4px",
+              };
+              const line = { margin: "4px 0" };
+
+              // --- JSX ---
+              return (
+                <div
+                  style={{
+                    background: "#f9fbfd",
+                    borderRadius: "14px",
+                    padding: "20px",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <h3
+                    style={{
+                      margin: "0 0 20px 0",
+                      color: "#1e88e5",
+                      borderBottom: "2px solid #e3f2fd",
+                      paddingBottom: "6px",
+                      textAlign: "left",
+                    }}
+                  >
+                    📘 Calculation Summary ({selectedPhase})
+                  </h3>
+
+                  {/* --- Section 1: Phase Calculations --- */}
+                  <div style={section}>
+                    <div style={title}>🔹 Phase Conversion</div>
+                    <div style={line}>Single Phase: 230 × 0.85 / 1000 = <b>{singlePhaseCalc.toFixed(4)} kW</b></div>
+                    <div style={line}>Three Phase: 400 × 0.85 × 1.732 / 1000 = <b>{threePhaseCalc.toFixed(4)} kW</b></div>
+                  </div>
+
+                  {/* --- Section 2: Energy Needs --- */}
+                  <div style={section}>
+                    <div style={title}>⚡ Energy Requirement</div>
+                    <div style={line}>Required kWh = {operatingAmp} × ({dieselSaving}% ÷ 100) × {kFactor} = <b>{required_kWh.toFixed(3)} kWh</b></div>
+                    <div style={line}>Solar Panel Needed = {required_kWh.toFixed(3)} ÷ 0.64 ÷ 0.8 = <b>{solarNeeded} pcs</b></div>
+                    <div style={line}>Battery Needed = ({required_kWh.toFixed(2)} ÷ 2) × 2 = <b>{batteryNeeded} kWh</b></div>
+                    <div style={line}>Inverter Capacity = <b>{inverterCapacity} kW</b></div>
+                  </div>
+
+                  {/* --- Section 3: Cost Breakdown --- */}
+                  <div style={section}>
+                    <div style={title}>💰 Cost Breakdown</div>
+                    <div style={line}>Solar Cost: RM {solarRM.toLocaleString()}</div>
+                    <div style={line}>Battery Cost: RM {batteryRM.toLocaleString()}</div>
+                    <div style={line}>Inverter + Install: RM {(inverterCost + installCost).toLocaleString()}</div>
+                    <div style={{ ...line, fontWeight: "bold", marginTop: "8px" }}>
+                      Total System Cost = RM {totalRM.toLocaleString()}
+                    </div>
+                  </div>
+
+                  {/* --- Section 4: Saving & ROI --- */}
+                  <div style={section}>
+                    <div style={title}>💡 Saving & ROI</div>
+                    <div style={line}>
+                      Monthly Saving = ({solarNeeded} × 0.64 × 3.5 × 30 × 0.9) = <b>RM {saving.toLocaleString()}</b>
+                    </div>
+                    <div style={line}>
+                      ROI = (RM{totalRM.toLocaleString()} × {1 - tax}) ÷ (RM{saving.toFixed(2)} × 12) ={" "}
+                      <b>{isFinite(roiYears) ? roiYears.toFixed(2) : "-"} Years</b>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </>
+        ) : (
+          <>
+            {/* --- Variable Declarations --- */}
+            {(() => {
+              // --- Styles ---
+              const card = {
+                background: "#e6f0ff",
+                borderRadius: "12px",
+                padding: "20px",
+                marginTop: "20px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+              };
+
+              const sectionCard = {
+                background: "#ffffff",
+                border: "1px solid #ddd",
+                borderRadius: "10px",
+                padding: "12px 16px",
+                marginBottom: "14px",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+              };
+
+              const sectionHeader = {
+                fontSize: "16px",
+                fontWeight: "bold",
+                color: "#1565c0",
+                marginBottom: "8px",
+                borderBottom: "2px solid #e3f2fd",
+                paddingBottom: "4px",
+              };
+
+              // --- Constants ---
+              const solarCost = 1800;
+              const batteryCost = 660;
+              const inverterCost = 4000;
+              const installCost = 1000;
+              const dieselCost = 0.9;
+              const tax = 0.24;
+              const panelCapacity = 0.64;
+              const peakSunHour = 3.5;
+              const days = 30;
+
+              // --- Calculations ---
+              const required_kWh = value;
+
+              // 🔹 Panel calculation (/3.5 added)
+              const solarNeeded = Math.ceil((required_kWh / panelCapacity / 0.8 / 3.5));
+
+              // 🔹 Battery storage (/0.9 added, no /2)
+              const batteryRaw = required_kWh / 0.9;
+              const batteryNeeded = Math.ceil(batteryRaw / 5) * 5; // round up to nearest 5
+
+              // 🔹 Inverter capacity (nearest to 20, 30, 50)
+              const inverterOptions = [20, 30, 50];
+              const inverterCapacity = inverterOptions.reduce((prev, curr) =>
+                Math.abs(curr - required_kWh) < Math.abs(prev - required_kWh) ? curr : prev
+              );
+
+              const solarRM = Math.round(((required_kWh * panelCapacity) * solarCost) / 100) * 100;
               const batteryRM = batteryNeeded * batteryCost;
               const totalRM = solarRM + batteryRM + inverterCost + installCost;
               const saving = (solarNeeded * panelCapacity) * peakSunHour * days * dieselCost;
-              const netCost = totalRM * (1 - tax);      // apply tax to total
-              const annualSaving = saving * 12;         // convert monthly saving -> annual
+              const netCost = totalRM * (1 - tax);
+              const annualSaving = saving * 12;
               const roiYears = annualSaving > 0 ? netCost / annualSaving : NaN;
 
               return (
@@ -1066,7 +800,7 @@ function App() {
                     padding: "18px",
                     borderRadius: "14px",
                     boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
-                    textAlign:"left",
+                    textAlign: "left",
                     display: "flex",
                     flexDirection: "column",
                     gap: "20px",
@@ -1104,13 +838,13 @@ function App() {
                       • Required Energy = <b>{required_kWh} kWh/day</b>
                     </p>
                     <p>
-                      • Panels Needed = {required_kWh} ÷ {panelCapacity} ÷ 0.8 = <b>{solarNeeded} pcs</b>
+                      • Panels Needed = {required_kWh} ÷ {panelCapacity} ÷ 0.8 ÷ 3.5 = <b>{solarNeeded} pcs</b>
                     </p>
                     <p>
-                      • Battery Storage = ({required_kWh} ÷ 2) × 2 = <b>{batteryNeeded} kWh</b>
+                      • Battery Storage = {required_kWh} ÷ 0.9 = <b>{batteryNeeded} kWh</b>
                     </p>
                     <p>
-                      • Inverter Capacity = <b>{batteryNeeded} kWh</b>
+                      • Inverter Capacity = <b>{inverterCapacity} kWh</b>
                     </p>
                   </div>
 
