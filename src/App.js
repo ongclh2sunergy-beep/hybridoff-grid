@@ -22,12 +22,16 @@ function App() {
   const [calcDetails, setCalcDetails] = useState(null);
 
   // step 2: off-grid
-  const [hasGenset, setHasGenset] = useState(null); // for backup genset
   const [errorMessage, setErrorMessage] = useState("");  
 
   // Custom Appliance
   const [customText, setCustomText] = useState(
-    "1. Air Conditioner – 1.5 HP – 1 unit – 8 hours/day\n2. Refrigerator – Medium – 1 unit – 24 hours/day\n\nPlease calculate the kWh/day for these appliances"
+    "Electrical appliances – HorsePower – Quantity – Hours/day\n" +
+    "Example: Air Conditioner – 1.5 HP – 1 unit – 8 hours/day\n\n" +
+    "1. \n" +
+    "2. \n" +
+    "3. \n\n" +
+    "Please calculate the kWh/day for these appliances"
   );
   const [copyMessage, setCopyMessage] = useState("");
 
@@ -42,8 +46,6 @@ function App() {
       setDieselSaving(100);
     }
   }, [mode]);
-
-  // step 3: off-grid
 
   // Step 1: Select mode
   if (!mode) {
@@ -187,12 +189,16 @@ function App() {
                 setKva("");
                 setCalcDetails(null);
                 setValue("");
-                setHasGenset(null);
                 setErrorMessage("")
                 setOperatingHours(8)
                 setGensetLiters("")
                 setCustomText(
-                  "1. Air Conditioner – 1.5 HP – 1 unit – 8 hours/day\n2. Refrigerator – Medium – 1 unit – 24 hours/day\n\nPlease calculate the kWh/day for these appliances"
+                  "Electrical appliances – HorsePower – Quantity – Hours/day\n" +
+                  "Example: Air Conditioner – 1.5 HP – 1 unit – 8 hours/day\n\n" +
+                  "1. \n" +
+                  "2. \n" +
+                  "3. \n\n" +
+                  "Please calculate the kWh/day for these appliances"
                 );
               }}
             >
@@ -239,7 +245,182 @@ function App() {
               <>
               <br />
                 <p style={{ textAlign:"center", marginTop: "15px" }}><strong>Please enter your genset details</strong>:</p>
-                
+
+                <div style={styles.card}>
+                  {/* Quick Presets Dropdown */}
+                  <div style={{ marginTop: "20px", textAlign: "center" }}>
+                    <button
+                      onClick={() => setShowPresets(!showPresets)}
+                      style={{
+                        padding: "10px 20px",
+                        borderRadius: "8px",
+                        border: "1px solid #ccc",
+                        cursor: "pointer",
+                        backgroundColor: "#f5f5f5",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      💡 Quick Presets {showPresets ? "▲" : "▼"}
+                    </button>
+
+                    {showPresets && (
+                      <div style={{ marginTop: "15px" }}>
+                        <p style={{ fontSize: "14px", color: "#555", marginBottom: "15px" }}>
+                          These buttons let you quickly fill in common load scenarios.
+                        </p>
+
+                        <div
+                          style={{
+                            display: "grid",
+                            justifyContent: "center",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <button
+                            style={{ ...styles.modeButton, backgroundColor: "#4caf50", minwidth:"150px", }}
+                            onClick={() => {
+                              setKva(25);
+                              setOperatingM(18);
+                            }}
+                          >
+                            Small Usage <br />
+                            <span style={{ fontSize: "12px"}}>(Shops / Small Offices)
+                            </span>
+                          </button>
+
+                          <button
+                            style={{ ...styles.modeButton, backgroundColor: "#2196f3", minWidth:"150px", }}
+                            onClick={() => {
+                              setKva(80);
+                              setOperatingM(60);
+                            }}
+                          >
+                            Medium Usage <br />
+                            <span style={{ fontSize: "12px"}}>(Restaurant / School / Factory Section)</span>
+                          </button>
+
+                          <button
+                            style={{ ...styles.modeButton, backgroundColor: "#f44336", minWidth: "150px", }}
+                            onClick={() => {
+                              setKva(200);
+                              setOperatingM(150);
+                            }}
+                          >
+                            High Usage <br />
+                            <span style={{ fontSize: "12px" }}>(Large Factory / Hotel / Hospital)</span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* kVA */}
+                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
+                    <label>
+                      Genset Rating (kVA):
+                    </label>
+                    <input
+                      type="number"
+                      value={kva}
+                      onChange={(e) => setKva(e.target.value)}
+                      style={{
+                            ...styles.input, 
+                            marginTop:"8px",
+                            textAlign:"center",}}
+                      placeholder="Enter genset kVA"
+                    />
+                  </div>
+
+                  {/* Operating Amps */}
+                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
+                    <label>
+                      Operating Amps:
+                    </label>
+                    <input
+                      type="number"
+                      value={operatingM}
+                      onChange={(e) => setOperatingM(e.target.value)}
+                      style={{
+                          ...styles.input, 
+                          marginTop:"8px",
+                          textAlign:"center",}}
+                      placeholder="Enter operating Amps"
+                    />
+                  </div>  
+
+                  {/* Clear Button */}
+                  <div style={{ textAlign: "center", marginTop: "20px" }}>
+                    <button
+                      onClick={() => {
+                        setOperatingM("");
+                        setKva("");
+                        setCalcDetails(null);
+                      }}
+                      style={{
+                        padding: "10px 20px",
+                        borderRadius: "8px",
+                        border: "1px solid #ccc",
+                        cursor: "pointer",
+                        backgroundColor: "#ffebee",
+                        color: "#d32f2f",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      🧹 Clear All
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  style={styles.modeButton}
+                  onClick={() => {
+                    if (mode === "Hybrid" || mode === "Standby") {
+                      if (!phase) {
+                        setErrorMessage("⚠️ Please select a genset phase.");
+                        return;
+                      }
+                      if (!operatingM) {
+                        setErrorMessage("⚠️ Please enter operating Amps.");
+                        return;
+                      }
+                      if (!kva) {
+                        setErrorMessage("⚠️ Please enter the genset rating (kVA).");
+                        return;
+                      }
+                      // ✅ Guardrails
+                      if (Number(operatingM) <= 0) {
+                        setErrorMessage("⚠️ Operating Amps cannot be negative.");
+                        return;
+                      }
+                      if (Number(kva) <= 0) {
+                        setErrorMessage("⚠️ Genset rating (kVA) must be greater than 0.");
+                        return;
+                      }
+                    } else {
+                      if (!value) {
+                        setErrorMessage("⚠️ Please enter your electricity usage (kWh).");
+                        return;
+                      }
+                    }
+
+                    // If everything is filled, clear error and confirm
+                    setErrorMessage("");
+                    setConfirmed(true);
+
+                    // ✅ Delay scroll by 1s (after Step 3 renders)
+                    setTimeout(() => {
+                      window.scrollTo({
+                        top: 0,
+                        behavior: "smooth",
+                      });
+                    }, 500);
+                  }}
+                >
+                  Confirm
+                </button>
+
+                <h3>OR</h3>
+
                 <div style={styles.card}>
                   {/* NEW: Genset Liters Input */}
                   <div style={{ textAlign:"center", marginTop: "15px" }}>
@@ -388,133 +569,6 @@ function App() {
                       </div>
                     </details>
                   )}
-                </div>
-
-                <h3>OR</h3>
-
-                <div style={styles.card}>
-                  {/* Quick Presets Dropdown */}
-                  <div style={{ marginTop: "20px", textAlign: "center" }}>
-                    <button
-                      onClick={() => setShowPresets(!showPresets)}
-                      style={{
-                        padding: "10px 20px",
-                        borderRadius: "8px",
-                        border: "1px solid #ccc",
-                        cursor: "pointer",
-                        backgroundColor: "#f5f5f5",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      💡 Quick Presets {showPresets ? "▲" : "▼"}
-                    </button>
-
-                    {showPresets && (
-                      <div style={{ marginTop: "15px" }}>
-                        <p style={{ fontSize: "14px", color: "#555", marginBottom: "15px" }}>
-                          These buttons let you quickly fill in common load scenarios.
-                        </p>
-
-                        <div
-                          style={{
-                            display: "grid",
-                            justifyContent: "center",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <button
-                            style={{ ...styles.modeButton, backgroundColor: "#4caf50", minwidth:"150px", }}
-                            onClick={() => {
-                              setKva(25);
-                              setOperatingM(18);
-                            }}
-                          >
-                            Small Usage <br />
-                            <span style={{ fontSize: "12px"}}>(Shops / Small Offices)
-                            </span>
-                          </button>
-
-                          <button
-                            style={{ ...styles.modeButton, backgroundColor: "#2196f3", minWidth:"150px", }}
-                            onClick={() => {
-                              setKva(80);
-                              setOperatingM(60);
-                            }}
-                          >
-                            Medium Usage <br />
-                            <span style={{ fontSize: "12px"}}>(Restaurant / School / Factory Section)</span>
-                          </button>
-
-                          <button
-                            style={{ ...styles.modeButton, backgroundColor: "#f44336", minWidth: "150px", }}
-                            onClick={() => {
-                              setKva(200);
-                              setOperatingM(150);
-                            }}
-                          >
-                            High Usage <br />
-                            <span style={{ fontSize: "12px" }}>(Large Factory / Hotel / Hospital)</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Operating Amps */}
-                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
-                    <label>
-                      Operating Amps:
-                    </label>
-                    <input
-                      type="number"
-                      value={operatingM}
-                      onChange={(e) => setOperatingM(e.target.value)}
-                      style={{
-                          ...styles.input, 
-                          marginTop:"8px",
-                          textAlign:"center",}}
-                      placeholder="Enter operating Amps"
-                    />
-                  </div>
-
-                  {/* kVA */}
-                  <div style={{ display: "block", marginTop: "15px", textAlign:"center" }}>
-                    <label>
-                      Genset Rating (kVA):
-                    </label>
-                    <input
-                      type="number"
-                      value={kva}
-                      onChange={(e) => setKva(e.target.value)}
-                      style={{
-                            ...styles.input, 
-                            marginTop:"8px",
-                            textAlign:"center",}}
-                      placeholder="Enter genset kVA"
-                    />
-                  </div>  
-
-                  {/* Clear Button */}
-                  <div style={{ textAlign: "center", marginTop: "20px" }}>
-                    <button
-                      onClick={() => {
-                        setOperatingM("");
-                        setKva("");
-                        setCalcDetails(null);
-                      }}
-                      style={{
-                        padding: "10px 20px",
-                        borderRadius: "8px",
-                        border: "1px solid #ccc",
-                        cursor: "pointer",
-                        backgroundColor: "#ffebee",
-                        color: "#d32f2f",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      🧹 Clear All
-                    </button>
-                  </div>
                 </div>
               </>
             )}
@@ -731,11 +785,11 @@ function App() {
             const required_kWh = operatingAmp * (dieselSaving / 100) * kFactor;
 
             // 🔹 Round up solar normally, but battery to nearest 5
-            const solarNeeded = Math.ceil(required_kWh / panelCapacity);
+            const solarNeeded = Math.ceil((required_kWh / panelCapacity)/0.8);
             const batteryRaw = (required_kWh / 2) * 2;
             const batteryNeeded = Math.ceil(batteryRaw / 5) * 5; // Ceiling to nearest 5
 
-            const solarRM = (solarNeeded * panelCapacity) * solarCost;
+            const solarRM = Math.round(((solarNeeded * panelCapacity) * solarCost) / 100) * 100;
             const batteryRM = batteryNeeded * batteryCost;
             const totalRM = solarRM + batteryRM + inverterCost + installCost;
             const saving = (solarNeeded * panelCapacity) * peakSunHour * days * dieselCost;
@@ -842,16 +896,28 @@ function App() {
                         <td style={tdStyle}>= {required_kWh.toFixed(3)} kWh</td>
                       </tr>
                       <tr>
-                        <td style={tdStyle}>Solar Panel Needed</td>
-                        <td style={tdStyle}>{required_kWh.toFixed(3)} ÷ 0.64</td>
-                        <td style={tdStyle}>= {solarNeeded} pcs</td>
+                        <td style={{
+                            ...tdStyle,
+                            borderTop: "1px solid #ccc",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          Solar Panel Needed</td>
+                        <td style={tdStyle}>{required_kWh.toFixed(3)} ÷ 0.64 ÷ 0.8</td>
+                        <td style={tdStyle}>= <b>{solarNeeded} pcs</b></td>
                       </tr>
                       <tr>
-                        <td style={tdStyle}>Battery Needed</td>
+                        <td style={tdStyle}><b>Battery Needed</b></td>
                         <td style={tdStyle}>
                           ({required_kWh.toFixed(2)} ÷ 2) × 2
                         </td>
-                        <td style={tdStyle}>= {batteryNeeded} kWh</td>
+                        <td style={tdStyle}>= <b>{batteryNeeded} kWh</b></td>
+                      </tr>
+                      <tr>
+                        <td style={tdStyle}><b>Inverter Capacity</b></td>
+                        <td style={tdStyle}>
+                        </td>
+                        <td style={tdStyle}>= <b>{batteryNeeded} kWh</b></td>
                       </tr>
                     </tbody>
                   </table>
@@ -925,68 +991,154 @@ function App() {
           </>
         ) : (
           <>
-            {/* Off-Grid */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
+            {/* --- Variable Declarations --- */}
+            {(() => {
+              // --- Styles ---
+              const card = {
+              background: "#e6f0ff",
+              borderRadius: "12px",
+              padding: "20px",
+              marginTop: "20px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            };
+
+            const sectionCard = {
+              background: "#ffffff",
+              border: "1px solid #ddd",
+              borderRadius: "10px",
+              padding: "12px 16px",
+              marginBottom: "14px",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+            };
+
+            const sectionHeader = {
+              fontSize: "16px",
+              fontWeight: "bold",
+              color: "#1565c0",
+              marginBottom: "8px",
+              borderBottom: "2px solid #e3f2fd",
+              paddingBottom: "4px",
+            };
+              const table = {
                 width: "100%",
-                gap: "20px",
-                marginTop: "20px",
-              }}
-            >
-              {/* Input Parameters */}
-              <div style={styles.card}>
-                <h4>📥 Input Parameters</h4>
-                <p>Electricity Usage: <b>{value} kWh/day</b></p>
-              </div>
+                borderCollapse: "collapse",
+                marginTop: "10px",
+              };
 
-              {/* System Constants */}
-              <div style={styles.card}>
-                <h4>⚙️ System Constants</h4>
-                <p>Peak Sun Hour = <b>3.42 h/day</b></p>
-                <p>Solar Panel Wattage = <b>640 W</b></p>
-                <p>Autonomy = <b>3 Days</b></p>
-              </div>
+              const tdStyle = {
+                border: "1px solid #ddd",
+                padding: "6px 10px",
+                textAlign: "left",
+                fontSize: "0.9rem",
+              };
 
-              {/* Calculation */}
-              <div style={styles.card}>
-                <h4>🧮 Calculation</h4>
-                <p>Required kWh = <b>{value}</b> kWh/day</p>
+              const solarCost = 1800;
+              const batteryCost = 660;
+              const inverterCost = 4000;
+              const installCost = 1000;
+              const dieselCost = 0.9;
+              const tax = 0.24;
+              const panelCapacity = 0.64;
+              const peakSunHour = 3.5;
+              const days = 30;
+              
+              // --- Calculations ---
+              const required_kWh = value;
 
-                <p>
-                  Panels Needed ≈ <br />
-                  <b>({value} × 1.3) ÷ ((640 ÷ 1000) × 3.42)</b> <br />
-                  ≈ <b>{Math.ceil((Number(value) * 1.3) / ((640 / 1000) * 3.42))}</b> panels
-                </p>
+              // 🔹 Round up solar normally, but battery to nearest 5
+              const solarNeeded = Math.ceil((required_kWh / panelCapacity)/0.8);
+              const batteryRaw = (required_kWh / 2) * 2;
+              const batteryNeeded = Math.ceil(batteryRaw / 5) * 5; // Ceiling to nearest 5
 
-                <p>
-                  Battery Storage Needed ≈{" "}
-                  <b>
-                    ({value} × 3) ≈{" "} 
-                    {Math.ceil((Number(value) * 3))} kWh
-                  </b>
-                </p>
-              </div>
+              const solarRM = Math.round(((solarNeeded * panelCapacity) * solarCost) / 100) * 100;
+              const batteryRM = batteryNeeded * batteryCost;
+              const totalRM = solarRM + batteryRM + inverterCost + installCost;
+              const saving = (solarNeeded * panelCapacity) * peakSunHour * days * dieselCost;
+              const netCost = totalRM * (1 - tax);      // apply tax to total
+              const annualSaving = saving * 12;         // convert monthly saving -> annual
+              const roiYears = annualSaving > 0 ? netCost / annualSaving : NaN;
 
-              {/* System Requirement */}
-              <div style={styles.card}>
-                <h4>✅ System Requirement</h4>
-                <p>
-                  Total Solar Panels:{" "}
-                  <b>{Math.ceil((Number(value) * 1.3) / ((640 / 1000) * 3.42))}</b>
-                </p>
-                <p>
-                  Required Battery Storage:{" "}
-                  <b>
-                    {Number(value) * 3} kWh
-                  </b>
-                </p>
-                <p style={{ marginTop: "10px", fontStyle: "italic", color: "#555" }}>
-                  ⚠️ Batteries provide autonomy for <b>3 days</b>.
-                </p>
-              </div>
-            </div>
+              return (
+                <div
+                  style={{
+                    ...card,
+                    background: "#f9fbfd",
+                    padding: "18px",
+                    borderRadius: "14px",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                    textAlign:"left",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "20px",
+                  }}
+                >
+                  {/* --- Header --- */}
+                  <h3
+                    style={{
+                      margin: "0",
+                      color: "#1e88e5",
+                      borderBottom: "2px solid #e3f2fd",
+                      paddingBottom: "6px",
+                    }}
+                  >
+                    ☀️ Off-Grid Solar System Summary
+                  </h3>
+
+                  {/* --- Section 1: Input Parameters --- */}
+                  <div style={sectionCard}>
+                    <h4 style={sectionHeader}>📥 Input Parameters</h4>
+                    <p>• Electricity Usage: <b>{required_kWh} kWh/day</b></p>
+                  </div>
+
+                  {/* --- Section 2: System Constants --- */}
+                  <div style={sectionCard}>
+                    <h4 style={sectionHeader}>⚙️ System Constants</h4>
+                    <p>• Peak Sun Hour: <b>{peakSunHour} h/day</b></p>
+                    <p>• Solar Panel Wattage: <b>{panelCapacity} W</b></p>
+                  </div>
+
+                  {/* --- Section 3: Energy Calculations --- */}
+                  <div style={sectionCard}>
+                    <h4 style={sectionHeader}>🧮 Energy Calculations</h4>
+                    <p>
+                      • Required Energy = <b>{required_kWh} kWh/day</b>
+                    </p>
+                    <p>
+                      • Panels Needed = {required_kWh} ÷ {panelCapacity} ÷ 0.8 = <b>{solarNeeded} pcs</b>
+                    </p>
+                    <p>
+                      • Battery Storage = ({required_kWh} ÷ 2) × 2 = <b>{batteryNeeded} kWh</b>
+                    </p>
+                    <p>
+                      • Inverter Capacity = <b>{batteryNeeded} kWh</b>
+                    </p>
+                  </div>
+
+                  {/* --- Section 4: Cost Breakdown --- */}
+                  <div style={sectionCard}>
+                    <h4 style={sectionHeader}>💰 Cost Breakdown</h4>
+                    <p>• Solar Panel Cost: <b>RM {solarRM.toLocaleString()}</b></p>
+                    <p>• Battery Cost: <b>RM {batteryRM.toLocaleString()}</b></p>
+                    <p>• Inverter + Installation: <b>RM {(inverterCost + installCost).toLocaleString()}</b></p>
+                    <hr style={{ border: "none", borderTop: "1px solid #ccc", margin: "10px 0" }} />
+                    <p><b>Total System Cost:</b> RM {totalRM.toLocaleString()}</p>
+                  </div>
+
+                  {/* --- Section 5: Saving & ROI --- */}
+                  <div style={sectionCard}>
+                    <h4 style={sectionHeader}>💡 Saving & ROI</h4>
+                    <p>
+                      • Monthly Saving = ({solarNeeded} × 0.64 × {peakSunHour} × 30 × 0.9)  
+                      = <b>RM {saving.toLocaleString()}</b>
+                    </p>
+                    <p>
+                      • ROI = (RM{totalRM.toLocaleString()} × {1 - tax}) ÷ (RM{saving.toFixed(2)} × 12)  
+                      = <b>{isFinite(roiYears) ? roiYears.toFixed(2) : "-"} Years</b>
+                    </p>
+                  </div>
+                </div>
+              );
+            })()}
           </>
         )}
 
@@ -999,7 +1151,7 @@ function App() {
           width: "100%"
           }}
           >
-          <button
+          {/* <button
             style={{
               backgroundColor: "green",
               color: "white",
@@ -1012,174 +1164,77 @@ function App() {
             }}
             onClick={() => {
               const doc = new jsPDF();
-
-              // --- Constants ---
-              const peakSunHour = 3.42;
-              const panelWatt = 640;
-              const pf = 0.85;
-
-              let totalPanels = 0;
-              let required_kWh = 0;
-              let genset_kWh = 0;
-              let effectiveAmp = 0;
-
-              // --- If genset fuel capacity is provided, assume 50% load ---
-              if (gensetLiters) {
-                effectiveAmp = operatingM * 0.5;
-              } else {
-                effectiveAmp = operatingM;
-              }
-
-              // --- Energy Calculations ---
-              if (mode === "Hybrid" || mode === "Standby") {
-                genset_kWh = effectiveAmp * operatingHours; // amps × hours (rough estimation)
-                required_kWh = genset_kWh * (dieselSaving / 100); // solar offset target
-                totalPanels = Math.ceil(
-                  (required_kWh * 1.3) / ((panelWatt / 1000) * peakSunHour)
-                );
-              } else {
-                required_kWh = Number(value || 0); // off-grid user input
-                totalPanels = Math.ceil(
-                  (required_kWh * 1.3) / ((panelWatt / 1000) * peakSunHour)
-                );
-              }
-
-              const requiredBatteryStorageKwh =
-                mode === "Hybrid" || mode === "Standby"
-                  ? required_kWh
-                  : required_kWh * 3;
-
-              // --- Title ---
               doc.setFontSize(20);
-              doc.setTextColor(40, 90, 140);
-              doc.text("System Sizing Report", 14, 20);
+              doc.text("Hybrid Off-Grid System Report", 14, 20);
 
-              // --- Section: Input Parameters ---
-              doc.setFillColor(230, 240, 255);
-              doc.rect(10, 30, 190, 10, "F");
-              doc.setTextColor(0);
-              doc.setFontSize(14);
-              doc.text("Input Parameters", 14, 37);
-
+              let y = 35;
               doc.setFontSize(12);
-              if (mode === "Hybrid" || mode === "Standby") {
-                const kvaToKw = (Number(kva) * pf).toFixed(1);
-                doc.setFont("helvetica", "normal");
-                doc.text(`Mode: ${mode}`, 14, 47);
-                doc.text(
-                  `Genset Rating: ${kva} kVA (= ${kvaToKw} kW at PF ${pf})`,
-                  14,
-                  55
-                );
-                doc.text(`Operating Hours: ${operatingHours} h/day`, 14, 63);
-                doc.text(`Diesel Saving Target: ${dieselSaving}%`, 14, 71);
 
-                if (gensetLiters) {
-                  doc.text(`(Auto Applied 50% Load based on Genset Capacity)`, 14, 79);
-                }
-              } else {
-                doc.text(`Mode: Off-Grid`, 14, 47);
-                doc.text(`Daily Usage: ${value} kWh/day`, 14, 55);
-                doc.text(
-                  `Generator Mode: ${
-                    hasGenset === "hybrid"
-                      ? "Hybrid Mode"
-                      : hasGenset === "standby"
-                      ? "Standby Mode"
-                      : "Not Applicable"
-                  }`,
-                  14,
-                  63
-                );
-              }
+              // --- Section 1: Phase Conversion ---
+              doc.text("🔹 Phase Conversion", 14, y);
+              y += 8;
+              doc.text(`Single Phase: 230 × 0.85 / 1000 = ${singlePhaseCalc.toFixed(4)} kW`, 14, y);
+              y += 8;
+              doc.text(`Three Phase: 400 × 0.85 × 1.732 / 1000 = ${threePhaseCalc.toFixed(4)} kW`, 14, y);
+              y += 12;
 
-              // --- Section: System Constants ---
-              doc.setFillColor(230, 240, 255);
-              doc.rect(10, 90, 190, 10, "F");
-              doc.setFontSize(14);
-              doc.text("System Constants", 14, 97);
-
-              doc.setFontSize(12);
-              doc.text(`Power Factor: ${pf}`, 14, 107);
-              doc.text(`Peak Sun Hours: ${peakSunHour} h/day`, 14, 115);
-              doc.text(`Solar Panel Size: ${panelWatt} W`, 14, 123);
-
-              // --- Section: Full Calculations ---
-              doc.setFillColor(230, 240, 255);
-              doc.rect(10, 135, 190, 10, "F");
-              doc.setFontSize(14);
-              doc.text("Full Calculations", 14, 142);
-
-              doc.setFontSize(11);
-              if (mode === "Hybrid" || mode === "Standby") {
-                doc.text(
-                  `1) Estimated Genset Output = ${effectiveAmp.toFixed(1)} A × ${operatingHours} h = ${genset_kWh.toFixed(1)} kWh/day`,
-                  14,
-                  152
-                );
-                doc.text(
-                  `2) Required Solar = ${genset_kWh.toFixed(1)} × (${dieselSaving}% ÷ 100) = ${required_kWh.toFixed(1)} kWh/day`,
-                  14,
-                  160
-                );
-                doc.text(
-                  `3) Per Panel Output = (${panelWatt} ÷ 1000) × ${peakSunHour} = ${(panelWatt / 1000 * peakSunHour).toFixed(2)} kWh/day`,
-                  14,
-                  168
-                );
-                doc.text(
-                  `4) Total Panels (with 30% reserve) = ${required_kWh.toFixed(1)} × 1.3 ÷ ${((panelWatt / 1000) * peakSunHour).toFixed(2)} = ${totalPanels}`,
-                  14,
-                  176
-                );
-                doc.text(
-                  `5) Required Battery Storage = ${requiredBatteryStorageKwh.toFixed(1)} kWh/day`,
-                  14,
-                  184
-                );
-
-                if (gensetLiters) {
-                  doc.text(`(Applied 50% load for initial genset estimation)`, 14, 192);
-                }
-              } else {
-                doc.text(`1) Required Energy = ${required_kWh} kWh/day`, 14, 152);
-                doc.text(
-                  `2) Per Panel Output = (${panelWatt} ÷ 1000) × ${peakSunHour} = ${(panelWatt / 1000 * peakSunHour).toFixed(2)} kWh/day`,
-                  14,
-                  160
-                );
-                doc.text(
-                  `3) Total Panels (with 30% reserve) = ${required_kWh} × 1.3 ÷ ${((panelWatt / 1000) * peakSunHour).toFixed(2)} = ${totalPanels}`,
-                  14,
-                  168
-                );
-                doc.text(
-                  `4) Required Battery Storage = ${requiredBatteryStorageKwh.toFixed(1)} kWh/day`,
-                  14,
-                  176
-                );
-              }
-
-              // --- Section: Final System Requirement ---
-              doc.setFillColor(230, 240, 255);
-              doc.rect(10, 202, 190, 10, "F");
-              doc.setFontSize(14);
-              doc.text("System Requirement", 14, 209);
-
-              doc.setFontSize(12);
-              doc.setTextColor(20, 100, 20);
-              doc.text(`Solar Panels Needed: ${totalPanels}`, 14, 219);
+              // --- Section 2: Energy Requirement ---
+              doc.text("⚡ Energy Requirement", 14, y);
+              y += 8;
               doc.text(
-                `Battery Storage Required: ${requiredBatteryStorageKwh.toFixed(1)} kWh/day`,
+                `Required kWh: ${operatingAmp} × (${dieselSaving}% ÷ 100) × ${kFactor} = ${required_kWh.toFixed(3)} kWh`,
                 14,
-                227
+                y
+              );
+              y += 8;
+              doc.text(
+                `Solar Panel Needed: ${required_kWh.toFixed(3)} ÷ 0.64 ÷ 0.8 = ${solarNeeded} pcs`,
+                14,
+                y
+              );
+              y += 8;
+              doc.text(
+                `Battery Needed: (${required_kWh.toFixed(2)} ÷ 2) × 2 = ${batteryNeeded} kWh`,
+                14,
+                y
+              );
+              y += 12;
+
+              // --- Section 3: Cost Breakdown ---
+              doc.text("💰 Cost Breakdown", 14, y);
+              y += 8;
+              doc.text(`Solar Cost: RM ${solarRM.toLocaleString()}`, 14, y);
+              y += 8;
+              doc.text(`Battery Cost: RM ${batteryRM.toLocaleString()}`, 14, y);
+              y += 8;
+              doc.text(`Inverter + Install: RM ${(inverterCost + installCost).toLocaleString()}`, 14, y);
+              y += 8;
+              doc.text(`Total System Cost: RM ${totalRM.toLocaleString()}`, 14, y);
+              y += 12;
+
+              // --- Section 4: Saving & ROI ---
+              doc.text("💡 Saving & ROI", 14, y);
+              y += 8;
+              doc.text(
+                `Monthly Saving: (${solarNeeded} × 0.64 × 3.5 × 30 × 0.9) = RM ${saving.toLocaleString()}`,
+                14,
+                y
+              );
+              y += 8;
+              doc.text(
+                `ROI: (RM${totalRM.toLocaleString()} × ${1 - tax}) ÷ (RM${saving.toFixed(2)} × 12) = ${
+                  isFinite(roiYears) ? roiYears.toFixed(2) : "-"
+                } Years`,
+                14,
+                y
               );
 
-              doc.save("system-sizing-report.pdf");
+              // Save file
+              doc.save("Hybrid_OffGrid_Report.pdf");
             }}
           >
             📄 Export to PDF
-          </button>
+          </button> */}
 
           <button
             style={{
@@ -1203,7 +1258,6 @@ function App() {
               setConfirmed(false);
               setOperatingHours(8);
               setDieselSaving(50);
-              setHasGenset(null);
               setGensetLiters("")
             }}
           >
