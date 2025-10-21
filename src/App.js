@@ -251,7 +251,8 @@ function App() {
                 <div style={styles.card}>
                   {/* Quick Presets Dropdown */}
                   <div style={{ marginTop: "20px", textAlign: "center" }}>
-                    <button
+                    {/*#######################################################################*/}
+                    {/* <button
                       onClick={() => setShowPresets(!showPresets)}
                       style={{
                         padding: "10px 20px",
@@ -263,9 +264,12 @@ function App() {
                       }}
                     >
                       💡 Quick Presets {showPresets ? "▲" : "▼"}
-                    </button>
+                    </button> */}
+                    {/*#######################################################################*/}
 
-                    {showPresets && (
+
+                    {/*#######################################################################*/}
+                    {/* {showPresets && (
                       <div style={{ marginTop: "15px" }}>
                         <p
                           style={{
@@ -336,7 +340,8 @@ function App() {
                           </button>
                         </div>
                       </div>
-                    )}
+                    )} */}
+                    {/*#######################################################################*/}
                   </div>
 
                   {/* kVA */}
@@ -626,11 +631,54 @@ function App() {
               const batteryRaw = (required_kWh / 2) * 2;
               const batteryNeeded = Math.ceil(batteryRaw / 5) * 5; // Ceiling to nearest 5
 
-              // 🔹 Inverter capacity selection (nearest to required energy)
+              // --- Inverter capacity logic ---
               const inverterOptions = [20, 30, 50];
-              const inverterCapacity = inverterOptions.reduce((prev, curr) =>
-                Math.abs(curr - required_kWh) < Math.abs(prev - required_kWh) ? curr : prev
-              );
+              let inverterCombination = [];
+              let totalCapacity = 0;
+
+              // 1️⃣ Check single inverter
+              for (const inv of inverterOptions) {
+                if (inv >= required_kWh) {
+                  inverterCombination = [inv];
+                  totalCapacity = inv;
+                  break;
+                }
+              }
+
+              // 2️⃣ Check two inverters (only if one inverter not enough)
+              if (inverterCombination.length === 0) {
+                for (let i = 0; i < inverterOptions.length; i++) {
+                  for (let j = i; j < inverterOptions.length; j++) {
+                    const sum = inverterOptions[i] + inverterOptions[j];
+                    if (sum >= required_kWh) {
+                      inverterCombination = [inverterOptions[i], inverterOptions[j]];
+                      totalCapacity = sum;
+                      break;
+                    }
+                  }
+                  if (inverterCombination.length > 0) break;
+                }
+              }
+
+              // 3️⃣ Check three inverters (only if still not enough)
+              if (inverterCombination.length === 0) {
+                for (let a = 0; a < inverterOptions.length; a++) {
+                  for (let b = a; b < inverterOptions.length; b++) {
+                    for (let c = b; c < inverterOptions.length; c++) {
+                      const sum = inverterOptions[a] + inverterOptions[b] + inverterOptions[c];
+                      if (sum >= required_kWh) {
+                        inverterCombination = [inverterOptions[a], inverterOptions[b], inverterOptions[c]];
+                        totalCapacity = sum;
+                        break;
+                      }
+                    }
+                    if (inverterCombination.length > 0) break;
+                  }
+                  if (inverterCombination.length > 0) break;
+                }
+              }
+
+              const inverterText = `${inverterCombination.join(" + ")} kWh (Total ${totalCapacity} kWh)`;
 
               const solarRM =
                 Math.round(((solarNeeded * panelCapacity) * solarCost) / 100) * 100;
@@ -697,7 +745,7 @@ function App() {
                     <div style={line}>Required kWh = {operatingAmp} × ({dieselSaving}% ÷ 100) × {kFactor} = <b>{required_kWh.toFixed(3)} kWh</b></div>
                     <div style={line}>Solar Panel Needed = {required_kWh.toFixed(3)} ÷ 0.64 ÷ 0.8 = <b>{solarNeeded} pcs</b></div>
                     <div style={line}>Battery Needed = ({required_kWh.toFixed(2)} ÷ 2) × 2 = <b>{batteryNeeded} kWh</b></div>
-                    <div style={line}>Inverter Capacity = <b>{inverterCapacity} kW</b></div>
+                    <div style={line}>Inverter Capacity = <b>{inverterText}</b></div>
                   </div>
 
                   {/* --- Section 3: Cost Breakdown --- */}
@@ -772,22 +820,69 @@ function App() {
               const required_kWh = value;
 
               // 🔹 Panel calculation (/3.5 added)
-              const solarNeeded = Math.ceil((required_kWh / panelCapacity / 0.8 / 3.5));
+              const solarNeeded = Math.ceil(
+                required_kWh / panelCapacity / 0.8 / 3.5
+              );
 
               // 🔹 Battery storage (/0.9 added, no /2)
               const batteryRaw = required_kWh / 0.9;
               const batteryNeeded = Math.ceil(batteryRaw / 5) * 5; // round up to nearest 5
 
-              // 🔹 Inverter capacity (nearest to 20, 30, 50)
+              // --- Inverter capacity logic ---
               const inverterOptions = [20, 30, 50];
-              const inverterCapacity = inverterOptions.reduce((prev, curr) =>
-                Math.abs(curr - required_kWh) < Math.abs(prev - required_kWh) ? curr : prev
-              );
+              let inverterCombination = [];
+              let totalCapacity = 0;
 
-              const solarRM = Math.round(((required_kWh * panelCapacity) * solarCost) / 100) * 100;
+              // 1️⃣ Check single inverter
+              for (const inv of inverterOptions) {
+                if (inv >= required_kWh) {
+                  inverterCombination = [inv];
+                  totalCapacity = inv;
+                  break;
+                }
+              }
+
+              // 2️⃣ Check two inverters (only if one inverter not enough)
+              if (inverterCombination.length === 0) {
+                for (let i = 0; i < inverterOptions.length; i++) {
+                  for (let j = i; j < inverterOptions.length; j++) {
+                    const sum = inverterOptions[i] + inverterOptions[j];
+                    if (sum >= required_kWh) {
+                      inverterCombination = [inverterOptions[i], inverterOptions[j]];
+                      totalCapacity = sum;
+                      break;
+                    }
+                  }
+                  if (inverterCombination.length > 0) break;
+                }
+              }
+
+              // 3️⃣ Check three inverters (only if still not enough)
+              if (inverterCombination.length === 0) {
+                for (let a = 0; a < inverterOptions.length; a++) {
+                  for (let b = a; b < inverterOptions.length; b++) {
+                    for (let c = b; c < inverterOptions.length; c++) {
+                      const sum = inverterOptions[a] + inverterOptions[b] + inverterOptions[c];
+                      if (sum >= required_kWh) {
+                        inverterCombination = [inverterOptions[a], inverterOptions[b], inverterOptions[c]];
+                        totalCapacity = sum;
+                        break;
+                      }
+                    }
+                    if (inverterCombination.length > 0) break;
+                  }
+                  if (inverterCombination.length > 0) break;
+                }
+              }
+
+              const inverterText = `${inverterCombination.join(" + ")} kWh (Total ${totalCapacity} kWh)`;
+
+              const solarRM =
+                Math.round(((required_kWh * panelCapacity) * solarCost) / 100) * 100;
               const batteryRM = batteryNeeded * batteryCost;
               const totalRM = solarRM + batteryRM + inverterCost + installCost;
-              const saving = (solarNeeded * panelCapacity) * peakSunHour * days * dieselCost;
+              const saving =
+                solarNeeded * panelCapacity * peakSunHour * days * dieselCost;
               const netCost = totalRM * (1 - tax);
               const annualSaving = saving * 12;
               const roiYears = annualSaving > 0 ? netCost / annualSaving : NaN;
@@ -821,7 +916,9 @@ function App() {
                   {/* --- Section 1: Input Parameters --- */}
                   <div style={sectionCard}>
                     <h4 style={sectionHeader}>📥 Input Parameters</h4>
-                    <p>• Electricity Usage: <b>{required_kWh} kWh/day</b></p>
+                    <p>
+                      • Electricity Usage: <b>{required_kWh} kWh/day</b>
+                    </p>
                   </div>
 
                   {/* --- Section 2: System Constants --- */}
@@ -838,36 +935,54 @@ function App() {
                       • Required Energy = <b>{required_kWh} kWh/day</b>
                     </p>
                     <p>
-                      • Panels Needed = {required_kWh} ÷ {panelCapacity} ÷ 0.8 ÷ 3.5 = <b>{solarNeeded} pcs</b>
+                      • Panels Needed = {required_kWh} ÷ {panelCapacity} ÷ 0.8 ÷ 3.5 ={" "}
+                      <b>{solarNeeded} pcs</b>
                     </p>
                     <p>
-                      • Battery Storage = {required_kWh} ÷ 0.9 = <b>{batteryNeeded} kWh</b>
+                      • Battery Storage = {required_kWh} ÷ 0.9 ={" "}
+                      <b>{batteryNeeded} kWh</b>
                     </p>
                     <p>
-                      • Inverter Capacity = <b>{inverterCapacity} kWh</b>
+                      • Inverter Capacity = <b>{inverterText}</b>
                     </p>
                   </div>
 
                   {/* --- Section 4: Cost Breakdown --- */}
                   <div style={sectionCard}>
                     <h4 style={sectionHeader}>💰 Cost Breakdown</h4>
-                    <p>• Solar Panel Cost: <b>RM {solarRM.toLocaleString()}</b></p>
-                    <p>• Battery Cost: <b>RM {batteryRM.toLocaleString()}</b></p>
-                    <p>• Inverter + Installation: <b>RM {(inverterCost + installCost).toLocaleString()}</b></p>
-                    <hr style={{ border: "none", borderTop: "1px solid #ccc", margin: "10px 0" }} />
-                    <p><b>Total System Cost:</b> RM {totalRM.toLocaleString()}</p>
+                    <p>
+                      • Solar Panel Cost: <b>RM {solarRM.toLocaleString()}</b>
+                    </p>
+                    <p>
+                      • Battery Cost: <b>RM {batteryRM.toLocaleString()}</b>
+                    </p>
+                    <p>
+                      • Inverter + Installation:{" "}
+                      <b>RM {(inverterCost + installCost).toLocaleString()}</b>
+                    </p>
+                    <hr
+                      style={{
+                        border: "none",
+                        borderTop: "1px solid #ccc",
+                        margin: "10px 0",
+                      }}
+                    />
+                    <p>
+                      <b>Total System Cost:</b> RM {totalRM.toLocaleString()}
+                    </p>
                   </div>
 
                   {/* --- Section 5: Saving & ROI --- */}
                   <div style={sectionCard}>
                     <h4 style={sectionHeader}>💡 Saving & ROI</h4>
                     <p>
-                      • Monthly Saving = ({solarNeeded} × 0.64 × {peakSunHour} × 30 × 0.9)  
-                      = <b>RM {saving.toLocaleString()}</b>
+                      • Monthly Saving = ({solarNeeded} × 0.64 × {peakSunHour} × 30 ×
+                      0.9) = <b>RM {saving.toLocaleString()}</b>
                     </p>
                     <p>
-                      • ROI = (RM{totalRM.toLocaleString()} × {1 - tax}) ÷ (RM{saving.toFixed(2)} × 12)  
-                      = <b>{isFinite(roiYears) ? roiYears.toFixed(2) : "-"} Years</b>
+                      • ROI = (RM{totalRM.toLocaleString()} × {1 - tax}) ÷ (RM
+                      {saving.toFixed(2)} × 12) ={" "}
+                      <b>{isFinite(roiYears) ? roiYears.toFixed(2) : "-"} Years</b>
                     </p>
                   </div>
                 </div>
