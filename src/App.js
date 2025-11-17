@@ -826,7 +826,7 @@ function App() {
 
               // 🔹 Battery storage (/0.9 added, no /2)
               const batteryRaw = required_kWh / 0.9;
-              const batteryNeeded = Math.ceil(batteryRaw / 5) * 5; // round up to nearest 5
+              const batteryNeeded = Math.ceil(batteryRaw / 5) * 5 * 3; // round up to nearest 5
 
               // --- Inverter capacity logic ---
               const inverterOptions = [20, 30, 50];
@@ -939,7 +939,7 @@ function App() {
                       <b>{solarNeeded} pcs</b>
                     </p>
                     <p>
-                      • Battery Storage = {required_kWh} ÷ 0.9 ={" "}
+                      • Battery Storage = ({required_kWh} ÷ 0.9) * 3 ={" "}
                       <b>{batteryNeeded} kWh</b>
                     </p>
                     <p>
