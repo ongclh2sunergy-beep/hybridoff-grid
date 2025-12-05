@@ -630,6 +630,9 @@ function App() {
               const solarNeeded = Math.ceil((required_kWh / panelCapacity) / 0.8);
               const batteryRaw = (required_kWh / 2) * 2;
               const batteryNeeded = Math.ceil(batteryRaw / 5) * 5; // Ceiling to nearest 5
+            
+              // --- Inverter capacity required based on panels ---
+              const inverterRequired = (solarNeeded * 0.64) / 1.3;
 
               // --- Inverter capacity logic ---
               const inverterOptions = [20, 30, 50];
@@ -638,7 +641,7 @@ function App() {
 
               // 1️⃣ Check single inverter
               for (const inv of inverterOptions) {
-                if (inv >= required_kWh) {
+                if (inv >= inverterRequired) {
                   inverterCombination = [inv];
                   totalCapacity = inv;
                   break;
@@ -660,21 +663,34 @@ function App() {
                 }
               }
 
-              // 3️⃣ Check three inverters (only if still not enough)
+              // 3️⃣ Try THREE inverters (only if still not enough)
               if (inverterCombination.length === 0) {
+                let bestTriple = null;
+                let bestSum = Infinity;
+
                 for (let a = 0; a < inverterOptions.length; a++) {
                   for (let b = a; b < inverterOptions.length; b++) {
                     for (let c = b; c < inverterOptions.length; c++) {
-                      const sum = inverterOptions[a] + inverterOptions[b] + inverterOptions[c];
-                      if (sum >= required_kWh) {
-                        inverterCombination = [inverterOptions[a], inverterOptions[b], inverterOptions[c]];
-                        totalCapacity = sum;
-                        break;
+                      const sum =
+                        inverterOptions[a] +
+                        inverterOptions[b] +
+                        inverterOptions[c];
+
+                      if (sum >= inverterRequired && sum < bestSum) {
+                        bestTriple = [
+                          inverterOptions[a],
+                          inverterOptions[b],
+                          inverterOptions[c],
+                        ];
+                        bestSum = sum;
                       }
                     }
-                    if (inverterCombination.length > 0) break;
                   }
-                  if (inverterCombination.length > 0) break;
+                }
+
+                if (bestTriple) {
+                  inverterCombination = bestTriple;
+                  totalCapacity = bestSum;
                 }
               }
 
@@ -828,50 +844,72 @@ function App() {
               const batteryRaw = required_kWh / 0.9;
               const batteryNeeded = Math.ceil(batteryRaw / 5) * 5 * 3; // round up to nearest 5
 
+              // --- Inverter capacity required based on panels ---
+              const inverterRequired = (solarNeeded * 0.64) / 1.3;
+
               // --- Inverter capacity logic ---
               const inverterOptions = [20, 30, 50];
               let inverterCombination = [];
               let totalCapacity = 0;
 
-              // 1️⃣ Check single inverter
+              // 1️⃣ Try SINGLE inverter (closest but ≥ required)
               for (const inv of inverterOptions) {
-                if (inv >= required_kWh) {
+                if (inv >= inverterRequired) {
                   inverterCombination = [inv];
                   totalCapacity = inv;
                   break;
                 }
               }
 
-              // 2️⃣ Check two inverters (only if one inverter not enough)
+              // 2️⃣ Try TWO inverters (only if single not enough)
               if (inverterCombination.length === 0) {
+                let bestPair = null;
+                let bestSum = Infinity;
+
                 for (let i = 0; i < inverterOptions.length; i++) {
                   for (let j = i; j < inverterOptions.length; j++) {
                     const sum = inverterOptions[i] + inverterOptions[j];
-                    if (sum >= required_kWh) {
-                      inverterCombination = [inverterOptions[i], inverterOptions[j]];
-                      totalCapacity = sum;
-                      break;
+                    if (sum >= inverterRequired && sum < bestSum) {
+                      bestPair = [inverterOptions[i], inverterOptions[j]];
+                      bestSum = sum;
                     }
                   }
-                  if (inverterCombination.length > 0) break;
+                }
+
+                if (bestPair) {
+                  inverterCombination = bestPair;
+                  totalCapacity = bestSum;
                 }
               }
 
-              // 3️⃣ Check three inverters (only if still not enough)
+              // 3️⃣ Try THREE inverters (only if still not enough)
               if (inverterCombination.length === 0) {
+                let bestTriple = null;
+                let bestSum = Infinity;
+
                 for (let a = 0; a < inverterOptions.length; a++) {
                   for (let b = a; b < inverterOptions.length; b++) {
                     for (let c = b; c < inverterOptions.length; c++) {
-                      const sum = inverterOptions[a] + inverterOptions[b] + inverterOptions[c];
-                      if (sum >= required_kWh) {
-                        inverterCombination = [inverterOptions[a], inverterOptions[b], inverterOptions[c]];
-                        totalCapacity = sum;
-                        break;
+                      const sum =
+                        inverterOptions[a] +
+                        inverterOptions[b] +
+                        inverterOptions[c];
+
+                      if (sum >= inverterRequired && sum < bestSum) {
+                        bestTriple = [
+                          inverterOptions[a],
+                          inverterOptions[b],
+                          inverterOptions[c],
+                        ];
+                        bestSum = sum;
                       }
                     }
-                    if (inverterCombination.length > 0) break;
                   }
-                  if (inverterCombination.length > 0) break;
+                }
+
+                if (bestTriple) {
+                  inverterCombination = bestTriple;
+                  totalCapacity = bestSum;
                 }
               }
 
